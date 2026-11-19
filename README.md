@@ -14,12 +14,19 @@ question the agent says so instead of guessing.
 2. **Search**: `scripts/build_index.py` splits sections into roughly 1,200-character passages at
    paragraph breaks, giving each one a stable id (`lincoln-papers:944.1`). It then builds a SQLite FTS5
    index at `corpus/index.sqlite`.
-3. **Agent** (`app/agent.py`): Gemini (free tier, the default) or Claude Sonnet 5.5 (`LLM_PROVIDER=claude`) plans 2–4 keyword searches, reads the best
+3. **Meaning-based search** (`app/semantic.py`): word vectors (spaCy `en_core_web_md`, shipped as
+   `corpus/wordvecs.npy`) averaged per passage with SIF weighting, so related words match without an
+   API or quota. Results are fused with keyword results (reciprocal rank fusion). Rebuild with
+   `python scripts/build_embeddings.py` after changing the corpus. Gemini's free embedding tier allows
+   only 1,000 texts a day, which is too few for 12,000 passages.
+4. **Agent** (`app/agent.py`): Gemini (free tier, the default) or Claude Sonnet 5.5 (`LLM_PROVIDER=claude`) plans 2–4 keyword searches, reads the best
    ~14 passages, and answers in a fixed structure in which each claim has a quote and a passage id.
    Code then drops any claim whose quote isn't verbatim in its passage. If nothing survives,
    the answer becomes "Not in the sources".
-4. **Web** (`app/server.py`, `app/static/index.html`): FastAPI with one page, `/api/ask`,
-   `/api/passage/{id}` and `/api/library`. A per-IP limit allows 20 questions an hour.
+5. **Web** (`app/server.py`, `app/static/index.html`): FastAPI with one page, `/api/ask`,
+   `/api/passage/{id}`, `/api/context/{id}` (source viewer) and `/api/library`. Compare questions
+   ("How do X and Y describe…") are searched per figure and shown side by side. Voice input and
+   read-aloud use the browser's built-in speech features. A per-IP limit allows 20 questions an hour.
 
 ## Run locally
 
@@ -29,13 +36,14 @@ export GEMINI_API_KEY=...               # free key from aistudio.google.com; nev
 # or: export LLM_PROVIDER=claude ANTHROPIC_API_KEY=...
 python scripts/fetch_sources.py         # only needed to rebuild the corpus
 python scripts/build_index.py
+python scripts/build_embeddings.py     # needs spaCy + en_core_web_md, see the script
 cd app && uvicorn server:app --port 8000
 ```
 
 ## Test
 
 ```bash
-python tests/run_eval.py                # 30 questions, including 10 it should decline
+python tests/run_eval.py                # 38 questions: answers, refusals and comparisons
 ```
 
 ## Add a source

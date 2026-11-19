@@ -195,19 +195,28 @@ def _fuse(rankings: list[list[str]], k: int = 60) -> list[str]:
 
 
 def _search_one(corpus: Corpus, question: str, queries: list[str], figure: str | None, limit: int):
-    """Keyword search for each query plus meaning-based search for the question, fused."""
-    rankings = [[p["id"] for p in corpus.search(q, figure=figure, limit=limit)] for q in [question] + queries]
+    """Keyword search for each query, plus meaning-based search, fused.
+
+    Meaning is used twice: once over the whole library (or figure), and once to re-rank the
+    keyword hits. The re-rank matters when a keyword matches a section title, which makes every
+    passage in that section score the same (e.g. "funeral oration" for all of Thucydides Book II).
+    """
+    pool = 3 * limit
+    rankings = [[p["id"] for p in corpus.search(q, figure=figure, limit=pool)] for q in [question] + queries]
     sem = corpus.semantic
     if sem is not None and sem.ok:
         allowed = corpus.ids_for_figure(figure) if figure else None
-        rankings.append(sem.search(question, allowed=allowed, limit=limit))
-        rankings.append(sem.search(question, allowed=allowed, limit=limit))  # weight meaning 2x vs. one query
-    return _fuse([r for r in rankings if r])
+        rankings.append(sem.search(question, allowed=allowed, limit=pool))
+        hits = {pid for r in rankings[:-1] for pid in r}
+        if hits:
+            rankings.append(sem.search(question, allowed=hits, limit=pool))
+    rankings = [r[:pool] for r in rankings if r]
+    return _fuse(rankings)
 
 
 def gather(corpus: Corpus, question: str, plan: SearchPlan):
     figures = [f for f in plan.figures if corpus.has_figure(f)]
-    if plan.compare and len(figures) >= 2:
+    if len(figures) >= 2:   # compare, or e.g. "what did Lincoln write to Grant": search each
         per = max(4, MAX_PASSAGES // len(figures))
         ids = []
         for f in figures:
