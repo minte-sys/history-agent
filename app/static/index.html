@@ -7,92 +7,194 @@
 <style>
 :root{
   --bg:#f7f4ee; --panel:#fffdf8; --ink:#1f1b16; --muted:#6b6257; --line:#e2dbcf;
-  --accent:#8a3b12; --ok:#2f6b3a; --warn:#946200; --no:#8a2a2a; --quote:#f1ebe0;
+  --accent:#8a3b12; --ok:#2f6b3a; --warn:#946200; --no:#8a2a2a; --quote:#f1ebe0; --mark:#f6d98a;
 }
 @media (prefers-color-scheme: dark){
   :root{ --bg:#16140f; --panel:#1f1c16; --ink:#ece6da; --muted:#a39a8b; --line:#38322a;
-         --accent:#e0915e; --ok:#7fc08b; --warn:#e2b44f; --no:#e48a8a; --quote:#2a261e; }
+         --accent:#e0915e; --ok:#7fc08b; --warn:#e2b44f; --no:#e48a8a; --quote:#2a261e; --mark:#6b5418; }
 }
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 Georgia,"Iowan Old Style",serif}
-main{max-width:760px;margin:0 auto;padding:40px 16px 80px}
+main{max-width:860px;margin:0 auto;padding:40px 16px 80px}
 h1{font-size:2rem;margin:0 0 4px;letter-spacing:-.01em}
-.lede{color:var(--muted);margin:0 0 28px;font-family:system-ui,sans-serif;font-size:15px}
+.lede{color:var(--muted);margin:0 0 28px;font-family:system-ui,sans-serif;font-size:15px;max-width:640px}
 form{display:flex;gap:8px}
 input{flex:1;min-width:0;padding:12px 14px;font:inherit;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink)}
 button{padding:12px 18px;border:0;border-radius:8px;background:var(--accent);color:#fff;font:600 15px system-ui,sans-serif;cursor:pointer}
 button:disabled{opacity:.5;cursor:wait}
+.icon{background:var(--panel);color:var(--ink);border:1px solid var(--line);padding:12px 14px}
+.icon.on{background:var(--no);color:#fff;border-color:var(--no)}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 0}
 .chip{background:none;color:var(--muted);border:1px solid var(--line);padding:4px 10px;border-radius:99px;font:13px system-ui,sans-serif}
 #out{margin-top:32px}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:20px 22px}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap}
 .badge{display:inline-block;font:600 12px system-ui,sans-serif;text-transform:uppercase;letter-spacing:.05em;padding:2px 8px;border-radius:4px;border:1px solid currentColor;margin-bottom:10px}
 .answered{color:var(--ok)} .partial{color:var(--warn)} .not_supported{color:var(--no)}
+.listen{background:none;color:var(--accent);border:1px solid var(--line);padding:4px 12px;font-size:13px}
 .summary{font-size:1.1rem;margin:0 0 16px}
+.cols{display:grid;gap:18px}
+@media (min-width:720px){ .cols.two{grid-template-columns:1fr 1fr} }
+.colhead{font:600 13px system-ui,sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);border-bottom:2px solid var(--accent);padding-bottom:4px;margin-bottom:4px}
 .claim{border-top:1px solid var(--line);padding:14px 0 4px}
+.claim:first-of-type{border-top:0}
 .claim p{margin:0 0 8px}
-blockquote{margin:0 0 8px;padding:10px 14px;background:var(--quote);border-left:3px solid var(--accent);font-style:italic}
+blockquote{margin:0 0 8px;padding:10px 14px;background:var(--quote);border-left:3px solid var(--accent);font-style:italic;cursor:pointer}
+blockquote:hover{outline:1px solid var(--line)}
 .cite{font:13px/1.5 system-ui,sans-serif;color:var(--muted)}
 .cite a{color:var(--accent)}
-.ctx{font:15px/1.6 Georgia,serif;white-space:pre-wrap;color:var(--ink);background:var(--quote);padding:10px 14px;margin-top:8px;border-radius:6px;max-height:320px;overflow:auto}
+.comparison{margin-top:18px;padding:12px 14px;border:1px dashed var(--line);border-radius:8px}
 .caveat{font:14px system-ui,sans-serif;color:var(--muted);margin-top:14px}
 details.lib{margin-top:40px;font:14px system-ui,sans-serif;color:var(--muted)}
 details.lib li{margin:2px 0}
 .err{color:var(--no);font-family:system-ui,sans-serif}
 .spin{font:14px system-ui,sans-serif;color:var(--muted)}
+/* source viewer */
+dialog{border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--ink);padding:0;width:min(760px,calc(100vw - 32px));max-height:calc(100vh - 48px)}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+.vhead{padding:16px 20px;border-bottom:1px solid var(--line);font:14px/1.5 system-ui,sans-serif}
+.vhead b{font-size:15px}
+.vbody{padding:8px 20px 16px;overflow:auto;max-height:calc(100vh - 220px);white-space:pre-wrap}
+.vbody .ctx{color:var(--muted)}
+mark{background:var(--mark);color:inherit;padding:0 1px}
+.vfoot{display:flex;gap:8px;flex-wrap:wrap;padding:12px 20px;border-top:1px solid var(--line)}
+.vfoot button{padding:8px 12px;font-size:13px}
+.vfoot .ghost{background:none;color:var(--ink);border:1px solid var(--line)}
+.vfoot a{margin-left:auto;align-self:center;font:13px system-ui,sans-serif;color:var(--accent)}
 </style>
 </head>
 <body>
 <main>
   <h1>Primary Source History</h1>
-  <p class="lede">Ask about a famous figure. Every answer quotes their own words, checked word for word against the source. If the sources don't say, it tells you so.</p>
+  <p class="lede">Ask about a famous figure, or compare two. Every answer quotes their own words, checked word for word against the source. Click a quote to read it in context. If the sources don't say, it tells you so.</p>
   <form id="f">
-    <input id="q" placeholder="e.g. What did Marcus Aurelius learn from his father?" autocomplete="off" maxlength="500" required>
+    <input id="q" placeholder="e.g. How do Lincoln and Grant describe Vicksburg?" autocomplete="off" maxlength="500" required aria-label="Your question">
+    <button type="button" id="mic" class="icon" title="Ask by voice" aria-label="Ask by voice">🎤</button>
     <button id="b">Ask</button>
   </form>
   <div class="chips" id="chips"></div>
-  <div id="out"></div>
+  <div id="out" aria-live="polite"></div>
   <details class="lib"><summary>What's in the library</summary><ul id="lib"></ul></details>
 </main>
+
+<dialog id="viewer">
+  <div class="vhead" id="vhead"></div>
+  <div class="vbody" id="vbody"></div>
+  <div class="vfoot">
+    <button class="ghost" id="vmore-before">Show earlier text</button>
+    <button class="ghost" id="vmore-after">Show later text</button>
+    <button class="ghost" id="vread">Read aloud</button>
+    <a id="vlink" target="_blank" rel="noopener">Open the original edition ↗</a>
+    <button id="vclose">Close</button>
+  </div>
+</dialog>
+
 <script>
-const examples=["How did Frederick Douglass learn to read?","What did Napoleon write to Josephine from Italy?","How does Caesar describe the Gauls?","What does Sun Tzu say about spies?","Did Lincoln write about the Emancipation Proclamation?","What happened to the Endurance?"];
+const examples=["How did Frederick Douglass learn to read?","How do Lincoln and Grant describe the fall of Vicksburg?","What did Pericles say about Athens in the funeral oration?","What does the Anglo-Saxon Chronicle say about King Alfred?","Why did Madison think a large republic controls factions?","What happened to the Endurance?"];
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 examples.forEach(e=>{const b=document.createElement("button");b.className="chip";b.type="button";b.textContent=e;b.onclick=()=>{$("#q").value=e;ask()};$("#chips").append(b)});
-fetch("/api/library").then(r=>r.json()).then(ws=>{$("#lib").innerHTML=ws.map(w=>`<li><b>${esc(w.figure)}</b>: ${esc(w.work)} (${esc(w.date)}${w.translator?`, tr. ${esc(w.translator)}`:""})</li>`).join("")});
+fetch("/api/library").then(r=>r.json()).then(ws=>{$("#lib").innerHTML=ws.map(w=>`<li><b>${esc(w.figure)}</b>: ${esc(w.work)} (${esc(w.date)}${w.translator?`, tr. ${esc(w.translator)}`:""})${w.kind?` · <i>${esc(w.kind)}</i>`:""}</li>`).join("")});
 const labels={answered:"Answered from sources",partial:"Partly answered",not_supported:"Not in the sources"};
-async function ask(){
+let last=null;
+
+/* ---------- speech ---------- */
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+let rec=null;
+if(!SR){ $("#mic").hidden=true; }
+$("#mic").onclick=()=>{
+  if(rec){ rec.stop(); return; }
+  rec=new SR(); rec.lang=navigator.language||"en-US"; rec.interimResults=true; rec.maxAlternatives=1;
+  $("#mic").classList.add("on"); $("#q").placeholder="Listening…";
+  rec.onresult=e=>{ const t=[...e.results].map(r=>r[0].transcript).join(""); $("#q").value=t;
+    if(e.results[e.results.length-1].isFinal){ rec.stop(); ask(true); } };
+  rec.onend=()=>{ rec=null; $("#mic").classList.remove("on"); $("#q").placeholder="Ask another question"; };
+  rec.onerror=()=>{ rec&&rec.stop(); };
+  rec.start();
+};
+function speak(text){
+  if(!("speechSynthesis" in window)) return;
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(text); u.rate=1; u.lang="en-US"; speechSynthesis.speak(u);
+}
+function answerAsSpeech(d){
+  let t=d.summary+" ";
+  d.claims.forEach(c=>{ t+=`${c.author}, ${c.work}: "${c.quote}". `; });
+  if(d.comparison) t+=" In comparison: "+d.comparison;
+  return t;
+}
+
+/* ---------- ask ---------- */
+async function ask(spoken){
   const q=$("#q").value.trim(); if(!q) return;
   $("#b").disabled=true; $("#out").innerHTML='<p class="spin">Searching the sources…</p>';
   try{
     const r=await fetch("/api/ask",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({question:q})});
     const d=await r.json();
     if(!r.ok) throw new Error(d.detail||"Request failed");
-    render(d);
+    last=d; render(d);
+    if(spoken===true) speak(answerAsSpeech(d));
   }catch(e){ $("#out").innerHTML=`<p class="err">${esc(e.message)}</p>`; }
   finally{ $("#b").disabled=false; }
 }
-function render(d){
-  const claims=d.claims.map((c,i)=>`
-    <div class="claim">
-      <p>${esc(c.statement)}</p>
-      <blockquote>“${esc(c.quote)}”</blockquote>
-      <div class="cite">${esc(c.author)}, <i>${esc(c.work)}</i>, ${esc(c.section)}${c.translator?`, translated by ${esc(c.translator)}`:""}${c.editor?`, edited by ${esc(c.editor)}`:""}.
-        <a href="${esc(c.url)}" target="_blank" rel="noopener">Source</a> ·
-        <a href="#" data-pid="${esc(c.passage_id)}" data-i="${i}">Show passage</a></div>
-      <div id="ctx${i}"></div>
-    </div>`).join("");
-  $("#out").innerHTML=`<div class="card">
-    <span class="badge ${d.verdict}">${labels[d.verdict]||d.verdict}</span>
-    <p class="summary">${esc(d.summary)}</p>${claims}
-    ${d.caveats?`<p class="caveat"><b>Note:</b> ${esc(d.caveats)}</p>`:""}</div>`;
-  document.querySelectorAll("[data-pid]").forEach(a=>a.onclick=async ev=>{
-    ev.preventDefault(); const box=$("#ctx"+a.dataset.i);
-    if(box.innerHTML){box.innerHTML="";return}
-    const p=await (await fetch("/api/passage/"+encodeURIComponent(a.dataset.pid))).json();
-    box.innerHTML=`<div class="ctx">${esc(p.text)}</div>`;
-  });
+function claimHTML(c,i){
+  return `<div class="claim">
+    <p>${esc(c.statement)}</p>
+    <blockquote data-i="${i}" title="Click to read in context">“${esc(c.quote)}”</blockquote>
+    <div class="cite">${esc(c.author)}, <i>${esc(c.work)}</i>, ${esc(String(c.section).replace(/[.\s]+$/,""))}${c.translator?`, translated by ${esc(c.translator)}`:""}${c.editor?`, edited by ${esc(c.editor)}`:""}.
+      <a href="#" data-i="${i}">Read in context</a> · <a href="${esc(c.url)}" target="_blank" rel="noopener">Original ↗</a></div>
+  </div>`;
 }
+function render(d){
+  let body;
+  if(d.compare){
+    const groups={}; d.claims.forEach((c,i)=>{(groups[c.figure]=groups[c.figure]||[]).push([c,i])});
+    const keys=Object.keys(groups);
+    body=`<div class="cols ${keys.length===2?"two":""}">`+keys.map(k=>`<div><div class="colhead">${esc(k)}</div>${groups[k].map(([c,i])=>claimHTML(c,i)).join("")}</div>`).join("")+`</div>`
+      +(d.comparison?`<div class="comparison"><b>How they compare:</b> ${esc(d.comparison)}</div>`:"");
+  }else{
+    body=d.claims.map((c,i)=>claimHTML(c,i)).join("");
+  }
+  $("#out").innerHTML=`<div class="card">
+    <div class="top"><span class="badge ${d.verdict}">${labels[d.verdict]||d.verdict}</span>
+      ${"speechSynthesis" in window?'<button class="listen" id="listen">🔊 Listen</button>':""}</div>
+    <p class="summary">${esc(d.summary)}</p>${body}
+    ${d.caveats?`<p class="caveat"><b>Note:</b> ${esc(d.caveats)}</p>`:""}</div>`;
+  const l=$("#listen"); if(l) l.onclick=()=>{ speechSynthesis.speaking?speechSynthesis.cancel():speak(answerAsSpeech(d)); };
+  document.querySelectorAll("[data-i]").forEach(el=>el.onclick=ev=>{ev.preventDefault(); openViewer(d.claims[+el.dataset.i]);});
+}
+
+/* ---------- source viewer ---------- */
+let view={claim:null,before:1,after:1};
+const norm=s=>s.replace(/[‘’]/g,"'").replace(/[“”]/g,'"').replace(/[—–]/g,"-").replace(/[⁠ ]/g,"");
+function highlight(text,quote){
+  // Find the quote ignoring case, curly quotes and whitespace differences; wrap it in <mark>.
+  const words=norm(quote).trim().replace(/^["'.,;: ]+|["'.,;: ]+$/g,"").split(/\s+/).map(w=>w.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"));
+  const re=new RegExp(words.join("[\\s\\u2060\\u200a]+").replace(/'/g,"['‘’]").replace(/"/g,'["“”]').replace(/-/g,"[-—–]+"),"i");
+  const m=re.exec(text);
+  if(!m) return esc(text);
+  return esc(text.slice(0,m.index))+"<mark>"+esc(m[0])+"</mark>"+esc(text.slice(m.index+m[0].length));
+}
+async function loadViewer(){
+  const c=view.claim;
+  const r=await fetch(`/api/context/${encodeURIComponent(c.passage_id)}?before=${view.before}&after=${view.after}`);
+  const d=await r.json();
+  const p=d.passage;
+  $("#vhead").innerHTML=`<b>${esc(p.author)}</b>, <i>${esc(p.work)}</i><br>${esc(p.section)}${p.translator?` · translated by ${esc(p.translator)}`:""}${p.date?` · ${esc(p.date)}`:""}`;
+  $("#vbody").innerHTML=d.neighbours.map(n=>n.id===p.id?`<div>${highlight(n.text,c.quote)}</div>`:`<div class="ctx">${esc(n.text)}</div>`).join("<br>");
+  $("#vlink").href=p.url;
+  const first=d.neighbours[0], lastN=d.neighbours[d.neighbours.length-1];
+  $("#vmore-before").disabled=!first||first.n<=1;
+  $("#vmore-after").disabled=!lastN||lastN.n>=d.section_passages;
+  const m=$("#vbody mark"); if(m) m.scrollIntoView({block:"center"});
+}
+function openViewer(c){ view={claim:c,before:1,after:1}; $("#viewer").showModal(); loadViewer(); }
+$("#vmore-before").onclick=()=>{view.before=Math.min(5,view.before+2);loadViewer()};
+$("#vmore-after").onclick=()=>{view.after=Math.min(5,view.after+2);loadViewer()};
+$("#vclose").onclick=()=>{ $("#viewer").close(); speechSynthesis&&speechSynthesis.cancel(); };
+$("#vread").onclick=()=>{ const m=$("#vbody mark"); speak(m?m.parentElement.textContent:$("#vbody").textContent); };
+$("#viewer").addEventListener("click",e=>{ if(e.target.id==="viewer") $("#viewer").close(); });
+
 $("#f").onsubmit=e=>{e.preventDefault();ask()};
 </script>
 </body>

@@ -57,6 +57,17 @@ def passage(pid: str):
     return p
 
 
+@app.get("/api/context/{pid}")
+def context(pid: str, before: int = 1, after: int = 1):
+    """The passage plus its neighbours in the same section, for the source viewer."""
+    p = corpus.get(pid)
+    if not p:
+        raise HTTPException(404, "No such passage")
+    before, after = max(0, min(before, 5)), max(0, min(after, 5))
+    return {"passage": p, "neighbours": corpus.neighbours(pid, before, after),
+            "section_passages": corpus.section_size(pid)}
+
+
 @app.post("/api/ask")
 def ask(body: Ask, request: Request):
     ip = request.headers.get("x-forwarded-for", request.client.host if request.client else "?").split(",")[0]

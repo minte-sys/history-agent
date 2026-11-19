@@ -10,16 +10,32 @@ she that the their them they this to was were what when where which who whom why
 about into than then there these those you your""".split())
 
 COLUMNS = ("id", "source_id", "figure", "author", "work", "translator", "editor", "date",
-           "section", "url", "section_order", "n", "text")
+           "kind", "section", "url", "section_order", "n", "text")
 
 
 class Corpus:
-    def __init__(self, path: Path = DB_PATH):
+    def __init__(self, path: Path = DB_PATH, semantic=True):
         self.db = sqlite3.connect(f"file:{path}?mode=ro", uri=True, check_same_thread=False)
+        self.semantic = None
+        if semantic:
+            from semantic import Semantic
+            self.semantic = Semantic()
+        self._fig_ids: dict[str, set[str]] = {}
+        self._figures = {r[0] for r in self.db.execute("SELECT DISTINCT figure FROM passages")}
+
+    def has_figure(self, figure: str) -> bool:
+        return any(figure.lower() in f.lower() for f in self._figures)
+
+    def ids_for_figure(self, figure: str) -> set[str]:
+        if figure not in self._fig_ids:
+            self._fig_ids[figure] = {r[0] for r in self.db.execute(
+                "SELECT id FROM passages WHERE figure LIKE ?", (f"%{figure}%",))}
+        return self._fig_ids[figure]
 
     def figures(self):
-        q = "SELECT figure, work, translator, date, COUNT(*) FROM passages GROUP BY source_id ORDER BY figure"
-        return [dict(zip(("figure", "work", "translator", "date", "passages"), r)) for r in self.db.execute(q)]
+        q = ("SELECT figure, work, translator, date, kind, COUNT(*) FROM passages "
+             "GROUP BY source_id ORDER BY figure")
+        return [dict(zip(("figure", "work", "translator", "date", "kind", "passages"), r)) for r in self.db.execute(q)]
 
     def search(self, query: str, figure: str | None = None, limit: int = 8):
         words = [w for w in re.findall(r"[\w']+", query.lower()) if w not in STOP and len(w) > 1]
@@ -49,3 +65,10 @@ class Corpus:
         q = ("SELECT " + ", ".join(COLUMNS) + " FROM passages WHERE source_id = ? AND section_order = ? "
              "AND n BETWEEN ? AND ? ORDER BY n")
         return [dict(zip(COLUMNS, r)) for r in self.db.execute(q, (p["source_id"], p["section_order"], p["n"] - before, p["n"] + after))]
+
+    def section_size(self, pid: str) -> int:
+        p = self.get(pid)
+        if not p:
+            return 0
+        return self.db.execute("SELECT COUNT(*) FROM passages WHERE source_id = ? AND section_order = ?",
+                               (p["source_id"], p["section_order"])).fetchone()[0]

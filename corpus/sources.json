@@ -1,26 +1,224 @@
 [
-  {"id": "caesar-gallic-war", "figure": "Julius Caesar", "author": "Julius Caesar", "work": "Commentaries on the Gallic War", "translator": "W. A. McDevitte and W. S. Bohn", "date": "c. 58–49 BCE",
-   "kind": "standardebooks", "repo": "julius-caesar_commentaries-on-the-gallic-war_w-a-mcdevitte_w-s-bohn", "extra": []},
-  {"id": "aurelius-meditations", "figure": "Marcus Aurelius", "author": "Marcus Aurelius", "work": "Meditations", "translator": "George Long", "date": "c. 170–180 CE",
-   "kind": "standardebooks", "repo": "marcus-aurelius_meditations_george-long", "extra": []},
-  {"id": "suntzu-art-of-war", "figure": "Sun Tzu", "author": "Sun Tzu (attributed)", "work": "The Art of War", "translator": "Lionel Giles", "date": "c. 5th century BCE",
-   "kind": "standardebooks", "repo": "sun-tzu_the-art-of-war_lionel-giles", "extra": []},
-  {"id": "machiavelli-prince", "figure": "Niccolò Machiavelli", "author": "Niccolò Machiavelli", "work": "The Prince", "translator": "W. K. Marriott", "date": "1513",
-   "kind": "standardebooks", "repo": "niccolo-machiavelli_the-prince_w-k-marriott", "extra": ["dedication"]},
-  {"id": "franklin-autobiography", "figure": "Benjamin Franklin", "author": "Benjamin Franklin", "work": "The Autobiography of Benjamin Franklin", "translator": null, "date": "1771–1790",
-   "kind": "standardebooks", "repo": "benjamin-franklin_the-autobiography-of-benjamin-franklin", "extra": []},
-  {"id": "douglass-narrative", "figure": "Frederick Douglass", "author": "Frederick Douglass", "work": "Narrative of the Life of Frederick Douglass, an American Slave", "translator": null, "date": "1845",
-   "kind": "standardebooks", "repo": "frederick-douglass_narrative-of-the-life-of-frederick-douglass", "extra": ["appendix"]},
-  {"id": "washington-up-from-slavery", "figure": "Booker T. Washington", "author": "Booker T. Washington", "work": "Up from Slavery", "translator": null, "date": "1901",
-   "kind": "standardebooks", "repo": "booker-t-washington_up-from-slavery", "extra": ["preface"]},
-  {"id": "gandhi-autobiography", "figure": "Mahatma Gandhi", "author": "M. K. Gandhi", "work": "The Story of My Experiments with Truth", "translator": "Mahadev Desai", "date": "1925–1929",
-   "kind": "standardebooks", "repo": "mahatma-gandhi_the-story-of-my-experiments-with-truth_mahadev-desai", "extra": ["introduction", "conclusion"]},
-  {"id": "equiano-narrative", "figure": "Olaudah Equiano", "author": "Olaudah Equiano", "work": "The Interesting Narrative of the Life of Olaudah Equiano", "translator": null, "date": "1789",
-   "kind": "standardebooks", "repo": "olaudah-equiano_the-interesting-narrative-of-the-life-of-olaudah-equiano", "extra": ["dedication", "miscellaneous-verses"]},
-  {"id": "shackleton-south", "figure": "Ernest Shackleton", "author": "Ernest Shackleton", "work": "South: The Story of Shackleton's Last Expedition, 1914–1917", "translator": null, "date": "1919",
-   "kind": "standardebooks", "repo": "ernest-shackleton_south", "extra": ["preface"]},
-  {"id": "napoleon-letters-josephine", "figure": "Napoleon Bonaparte", "author": "Napoleon I", "work": "Napoleon's Letters to Josephine, 1796–1812", "translator": "Henry Foljambe Hall", "date": "1796–1812",
-   "kind": "gitenberg", "repo": "Napoleon-s-Letters-to-Josephine_37499", "gutenberg_id": 37499},
-  {"id": "lincoln-papers", "figure": "Abraham Lincoln", "author": "Abraham Lincoln", "work": "The Papers and Writings of Abraham Lincoln (Constitutional Edition)", "translator": null, "editor": "Arthur Brooks Lapsley", "date": "1832–1865",
-   "kind": "gitenberg", "repo": "The-Papers-And-Writings-Of-Abraham-Lincoln-Complete_3253", "gutenberg_id": 3253}
+ {
+  "id": "caesar-gallic-war",
+  "figure": "Julius Caesar",
+  "author": "Julius Caesar",
+  "work": "Commentaries on the Gallic War",
+  "translator": "W. A. McDevitte and W. S. Bohn",
+  "date": "c. 58–49 BCE",
+  "kind": "war commentary",
+  "repo": "julius-caesar_commentaries-on-the-gallic-war_w-a-mcdevitte_w-s-bohn",
+  "extra": [],
+  "kind_src": "standardebooks"
+ },
+ {
+  "id": "aurelius-meditations",
+  "figure": "Marcus Aurelius",
+  "author": "Marcus Aurelius",
+  "work": "Meditations",
+  "translator": "George Long",
+  "date": "c. 170–180 CE",
+  "kind": "private notebook",
+  "repo": "marcus-aurelius_meditations_george-long",
+  "extra": [],
+  "kind_src": "standardebooks"
+ },
+ {
+  "id": "suntzu-art-of-war",
+  "figure": "Sun Tzu",
+  "author": "Sun Tzu (attributed)",
+  "work": "The Art of War",
+  "translator": "Lionel Giles",
+  "date": "c. 5th century BCE",
+  "kind": "treatise",
+  "repo": "sun-tzu_the-art-of-war_lionel-giles",
+  "extra": [],
+  "kind_src": "standardebooks"
+ },
+ {
+  "id": "machiavelli-prince",
+  "figure": "Niccolò Machiavelli",
+  "author": "Niccolò Machiavelli",
+  "work": "The Prince",
+  "translator": "W. K. Marriott",
+  "date": "1513",
+  "kind": "treatise",
+  "repo": "niccolo-machiavelli_the-prince_w-k-marriott",
+  "extra": [
+   "dedication"
+  ],
+  "kind_src": "standardebooks"
+ },
+ {
+  "id": "franklin-autobiography",
+  "figure": "Benjamin Franklin",
+  "author": "Benjamin Franklin",
+  "work": "The Autobiography of Benjamin Franklin",
+  "translator": null,
+  "date": "1771–1790",
+  "kind": "autobiography",
+  "repo": "benjamin-franklin_the-autobiography-of-benjamin-franklin",
+  "extra": [],
+  "kind_src": "standardebooks"
+ },
+ {
+  "id": "douglass-narrative",
+  "figure": "Frederick Douglass",
+  "author": "Frederick Douglass",
+  "work": "Narrative of the Life of Frederick Douglass, an American Slave",
+  "translator": null,
+  "date": "1845",
+  "kind": "autobiography",
+  "repo": "frederick-douglass_narrative-of-the-life-of-frederick-douglass",
+  "extra": [
+   "appendix"
+  ],
+  "kind_src": "standardebooks"
+ },
+ {
+  "id": "washington-up-from-slavery",
+  "figure": "Booker T. Washington",
+  "author": "Booker T. Washington",
+  "work": "Up from Slavery",
+  "translator": null,
+  "date": "1901",
+  "kind": "autobiography",
+  "repo": "booker-t-washington_up-from-slavery",
+  "extra": [
+   "preface"
+  ],
+  "kind_src": "standardebooks"
+ },
+ {
+  "id": "gandhi-autobiography",
+  "figure": "Mahatma Gandhi",
+  "author": "M. K. Gandhi",
+  "work": "The Story of My Experiments with Truth",
+  "translator": "Mahadev Desai",
+  "date": "1925–1929",
+  "kind": "autobiography",
+  "repo": "mahatma-gandhi_the-story-of-my-experiments-with-truth_mahadev-desai",
+  "extra": [
+   "introduction",
+   "conclusion"
+  ],
+  "kind_src": "standardebooks"
+ },
+ {
+  "id": "equiano-narrative",
+  "figure": "Olaudah Equiano",
+  "author": "Olaudah Equiano",
+  "work": "The Interesting Narrative of the Life of Olaudah Equiano",
+  "translator": null,
+  "date": "1789",
+  "kind": "autobiography",
+  "repo": "olaudah-equiano_the-interesting-narrative-of-the-life-of-olaudah-equiano",
+  "extra": [
+   "dedication",
+   "miscellaneous-verses"
+  ],
+  "kind_src": "standardebooks"
+ },
+ {
+  "id": "shackleton-south",
+  "figure": "Ernest Shackleton",
+  "author": "Ernest Shackleton",
+  "work": "South: The Story of Shackleton's Last Expedition, 1914–1917",
+  "translator": null,
+  "date": "1919",
+  "kind": "expedition account",
+  "repo": "ernest-shackleton_south",
+  "extra": [
+   "preface"
+  ],
+  "kind_src": "standardebooks"
+ },
+ {
+  "id": "napoleon-letters-josephine",
+  "figure": "Napoleon Bonaparte",
+  "author": "Napoleon I",
+  "work": "Napoleon's Letters to Josephine, 1796–1812",
+  "translator": "Henry Foljambe Hall",
+  "date": "1796–1812",
+  "kind": "letters",
+  "repo": "Napoleon-s-Letters-to-Josephine_37499",
+  "gutenberg_id": 37499,
+  "kind_src": "gitenberg"
+ },
+ {
+  "id": "lincoln-papers",
+  "figure": "Abraham Lincoln",
+  "author": "Abraham Lincoln",
+  "work": "The Papers and Writings of Abraham Lincoln (Constitutional Edition)",
+  "translator": null,
+  "editor": "Arthur Brooks Lapsley",
+  "date": "1832–1865",
+  "kind": "speeches, letters and state papers",
+  "repo": "The-Papers-And-Writings-Of-Abraham-Lincoln-Complete_3253",
+  "gutenberg_id": 3253,
+  "kind_src": "gitenberg"
+ },
+ {
+  "id": "thucydides-peloponnesian-war",
+  "figure": "Thucydides",
+  "author": "Thucydides",
+  "work": "History of the Peloponnesian War",
+  "translator": "Richard Crawley",
+  "date": "c. 431–400 BCE",
+  "kind": "chronicle with speeches (incl. Pericles' Funeral Oration)",
+  "kind_src": "standardebooks",
+  "repo": "thucydides_history-of-the-peloponnesian-war_richard-crawley",
+  "extra": []
+ },
+ {
+  "id": "grant-memoirs",
+  "figure": "Ulysses S. Grant",
+  "author": "Ulysses S. Grant",
+  "work": "Personal Memoirs of U. S. Grant",
+  "translator": null,
+  "date": "1885",
+  "kind": "memoir",
+  "kind_src": "standardebooks",
+  "repo": "ulysses-s-grant_personal-memoirs-of-ulysses-s-grant",
+  "extra": [
+   "preface",
+   "conclusion"
+  ]
+ },
+ {
+  "id": "anglo-saxon-chronicle",
+  "figure": "Anglo-Saxon chroniclers",
+  "author": "Anonymous monastic scribes",
+  "work": "The Anglo-Saxon Chronicle",
+  "translator": "James Ingram",
+  "date": "9th–12th century",
+  "kind": "chronicle",
+  "kind_src": "gitenberg",
+  "repo": "The-Anglo-Saxon-Chronicle_657",
+  "gutenberg_id": 657
+ },
+ {
+  "id": "federalist-papers",
+  "figure": "Alexander Hamilton, James Madison, John Jay",
+  "author": "Publius (Hamilton, Madison, Jay)",
+  "work": "The Federalist Papers",
+  "translator": null,
+  "date": "1787–1788",
+  "kind": "political essays",
+  "kind_src": "gitenberg",
+  "repo": "The-Federalist-Papers_1404",
+  "gutenberg_id": 1404
+ },
+ {
+  "id": "xenophon-anabasis",
+  "figure": "Xenophon",
+  "author": "Xenophon",
+  "work": "Anabasis",
+  "translator": "H. G. Dakyns",
+  "date": "c. 370 BCE",
+  "kind": "campaign memoir",
+  "kind_src": "gitenberg",
+  "repo": "Anabasis_1170",
+  "gutenberg_id": 1170
+ }
 ]

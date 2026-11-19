@@ -121,8 +121,13 @@ def se_sections(src):
         if len(body) < 40:
             continue
         order += 1
+        title = html.unescape(p.title).strip() or name
+        # Many editions title chapters with a bare numeral; add the chapter's own subtitle line.
+        paras = body.split("\n\n")
+        if re.fullmatch(r"[IVXLC]+", title) and len(paras) > 2 and len(paras[1]) < 160:
+            title = f"{title}: {paras[1]}"
         yield {
-            "section": html.unescape(p.title).strip() or name,
+            "section": title,
             "order": order,
             "url": SE_PAGE.format(slug=slug, name=name),
             "text": body,
@@ -145,8 +150,9 @@ def git_sections(src):
     from split_gutenberg import SPLITTERS
 
     url = PG_PAGE.format(gid=src["gutenberg_id"])
-    for i, (title, body) in enumerate(SPLITTERS[src["id"]](text), 1):
-        yield {"section": title, "order": i, "url": url, "text": body}
+    for i, item in enumerate(SPLITTERS[src["id"]](text), 1):
+        title, body, *extra = item   # a splitter may add per-section fields, e.g. {"author": ...}
+        yield {"section": title, "order": i, "url": url, "text": body, **(extra[0] if extra else {})}
 
 
 def main():
@@ -162,10 +168,10 @@ def main():
     for src in sources:
         if only and src["id"] not in only:
             continue
-        gen = se_sections if src["kind"] == "standardebooks" else git_sections
+        gen = se_sections if src["kind_src"] == "standardebooks" else git_sections
         n = chars = 0
         for sec in gen(src):
-            meta = {k: src.get(k) for k in ("figure", "author", "work", "translator", "editor", "date")}
+            meta = {k: src.get(k) for k in ("figure", "author", "work", "translator", "editor", "date", "kind")}
             records.append({"source_id": src["id"], **meta, **sec})
             n += 1
             chars += len(sec["text"])

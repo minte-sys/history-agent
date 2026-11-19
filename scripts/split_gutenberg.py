@@ -100,3 +100,69 @@ def lincoln(text: str):
 
 
 SPLITTERS = {"napoleon-letters-josephine": napoleon, "lincoln-papers": lincoln}
+
+
+# ---------- added sources ----------
+
+PAREN_NOTE = re.compile(r"\s?\((\d{1,3})\)")
+
+
+def anglo_saxon_chronicle(text: str):
+    """One section per year entry ("A.D. 871."). Translator's endnotes and (n) markers removed."""
+    # Drop every ENDNOTES block (they run until the next entry or the next blank-line-separated heading).
+    text = re.sub(r"\nENDNOTES:\n.*?(?=\n(?:A\.D\. ?\d+\.|B\.C\. ?\d+\.|THE ANGLO-SAXON CHRONICLE)|\Z)", "\n", text, flags=re.S)
+    start = text.find("\nA.D. 1.")
+    body = text[start:]
+    parts = re.split(r"\n(A\.D\. ?\d+\.)", body)
+    for i in range(1, len(parts), 2):
+        year = parts[i].replace("A.D.", "").strip(" .")
+        chunk = PAREN_NOTE.sub("", parts[i + 1])
+        chunk = re.sub(r"\(\(|\)\)", "", chunk)      # Ingram's (( )) marks text from other manuscripts
+        chunk = _clean(chunk)
+        if len(chunk) > 30:
+            yield f"Year {year}", chunk
+
+
+def federalist(text: str):
+    """One section per paper, with the paper's own author."""
+    parts = re.split(r"\n(FEDERALIST No\. \d+)\n", "\n" + text)
+    for i in range(1, len(parts), 2):
+        num = parts[i].split()[-1]
+        chunk = parts[i + 1]
+        lines = [l.strip() for l in chunk.strip().splitlines()]
+        title = lines[0] if lines else ""
+        m = re.search(r"\n(HAMILTON|MADISON|JAY|MADISON, with HAMILTON|HAMILTON OR MADISON)\n", chunk)
+        author = m.group(1).title().replace("With", "with") if m else "Publius"
+        body = chunk[m.end():] if m else chunk
+        body = re.split(r"\n\s*\*\*\* ?END OF|\nPUBLIUS\.?\n", body)[0]
+        body = _clean(PAREN_NOTE.sub("", body))
+        if len(body) > 200:
+            yield f"No. {num}: {title}", body, {"author": f"{author} (as Publius)"}
+
+
+def anabasis(text: str):
+    """One section per chapter (BOOK n, chapter in roman numerals); footnotes and line numbers removed."""
+    body = text[text.index("\nBOOK I\n"):]
+    book = None
+    for block in re.split(r"\n(BOOK [IVX]+)\n", body):
+        if re.fullmatch(r"BOOK [IVX]+", block.strip()):
+            book = block.strip().title()
+            continue
+        if not book:
+            continue
+        block = re.sub(r"\n {3,}\((?:In the|The )[^)]*\)\s*\n", "\n", block)  # translator's book summaries
+        chapters = re.split(r"\n\s*([IVX]+)\.?[ \t]*\n", "\n" + block)
+        for j in range(1, len(chapters), 2):
+            chunk = chapters[j + 1]
+            chunk = re.sub(r"(?m)^\s*\(\d+\) .*(?:\n(?!\s*\n).*)*", "", chunk)  # footnote paragraphs
+            chunk = re.sub(r"(?m)\s+\d{1,3}$", "", chunk)                   # trailing line numbers
+            chunk = _clean(PAREN_NOTE.sub("", chunk))
+            if len(chunk) > 200:
+                yield f"{book}, Chapter {chapters[j]}", chunk
+
+
+SPLITTERS.update({
+    "anglo-saxon-chronicle": anglo_saxon_chronicle,
+    "federalist-papers": federalist,
+    "xenophon-anabasis": anabasis,
+})

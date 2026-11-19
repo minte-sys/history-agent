@@ -49,7 +49,7 @@ def main():
         """
         CREATE TABLE passages (
             id TEXT PRIMARY KEY, source_id TEXT, figure TEXT, author TEXT, work TEXT,
-            translator TEXT, editor TEXT, date TEXT, section TEXT, url TEXT,
+            translator TEXT, editor TEXT, date TEXT, kind TEXT, section TEXT, url TEXT,
             section_order INTEGER, n INTEGER, text TEXT
         );
         CREATE VIRTUAL TABLE passages_fts USING fts5(
@@ -66,9 +66,9 @@ def main():
             for n, text in enumerate(passages(s["text"]), 1):
                 pid = f"{s['source_id']}:{s['order']}.{n}"
                 db.execute(
-                    "INSERT INTO passages VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                    "INSERT INTO passages VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                     (pid, s["source_id"], s["figure"], s["author"], s["work"], s.get("translator"),
-                     s.get("editor"), s.get("date"), s["section"], s["url"], s["order"], n, text),
+                     s.get("editor"), s.get("date"), s.get("kind"), s["section"], s["url"], s["order"], n, text),
                 )
                 rows += 1
     db.execute("INSERT INTO passages_fts(rowid, text, section, figure, work) "

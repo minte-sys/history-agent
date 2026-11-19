@@ -1,33 +1,194 @@
 [
-  {"q": "How did Frederick Douglass learn to read?", "expect": "answered", "must_cite": "douglass-narrative"},
-  {"q": "What did Marcus Aurelius learn from his grandfather Verus?", "expect": "answered", "must_cite": "aurelius-meditations"},
-  {"q": "How does Caesar describe the division of Gaul?", "expect": "answered", "must_cite": "caesar-gallic-war"},
-  {"q": "What does Sun Tzu say about the use of spies?", "expect": "answered", "must_cite": "suntzu-art-of-war"},
-  {"q": "According to Machiavelli, is it better for a prince to be loved or feared?", "expect": "answered", "must_cite": "machiavelli-prince"},
-  {"q": "How did Benjamin Franklin arrive in Philadelphia?", "expect": "answered", "must_cite": "franklin-autobiography"},
-  {"q": "What virtues did Benjamin Franklin list in his plan for moral perfection?", "expect": "answered", "must_cite": "franklin-autobiography"},
-  {"q": "What did Lincoln say at Gettysburg?", "expect": "answered", "must_cite": "lincoln-papers"},
-  {"q": "What did Lincoln say about a house divided?", "expect": "answered", "must_cite": "lincoln-papers"},
-  {"q": "How did Napoleon express his feelings for Josephine in his first letters?", "expect": "answered", "must_cite": "napoleon-letters-josephine"},
-  {"q": "How did Gandhi feel about his child marriage?", "expect": "answered", "must_cite": "gandhi-autobiography"},
-  {"q": "What happened to Gandhi on the train at Maritzburg?", "expect": "answered", "must_cite": "gandhi-autobiography"},
-  {"q": "How was Olaudah Equiano kidnapped?", "expect": "answered", "must_cite": "equiano-narrative"},
-  {"q": "How did Equiano describe the slave ship?", "expect": "answered", "must_cite": "equiano-narrative"},
-  {"q": "How did Booker T. Washington get to Hampton Institute?", "expect": "answered", "must_cite": "washington-up-from-slavery"},
-  {"q": "What happened to Shackleton's ship Endurance?", "expect": "answered", "must_cite": "shackleton-south"},
-  {"q": "How did Shackleton reach South Georgia?", "expect": "answered", "must_cite": "shackleton-south"},
-  {"q": "What did Lincoln write to Grant about Vicksburg?", "expect": "answered", "must_cite": "lincoln-papers"},
-  {"q": "What does Marcus Aurelius say about death?", "expect": "answered", "must_cite": "aurelius-meditations"},
-  {"q": "How did Caesar build the bridge over the Rhine?", "expect": "answered", "must_cite": "caesar-gallic-war"},
-
-  {"q": "What did Caesar say when he crossed the Rubicon?", "expect": "not_supported", "why": "Rubicon is in the Civil War, not in the library"},
-  {"q": "What did Gandhi say during the Salt March of 1930?", "expect": "not_supported", "why": "autobiography ends in 1921"},
-  {"q": "How did Lincoln feel when he was shot at Ford's Theatre?", "expect": "not_supported", "why": "no source covers his death"},
-  {"q": "What did Napoleon say at Waterloo?", "expect": "not_supported", "why": "letters to Josephine end in 1812"},
-  {"q": "What was Cleopatra's opinion of Caesar?", "expect": "not_supported", "why": "no Cleopatra source"},
-  {"q": "What did Martin Luther King Jr. say in his I Have a Dream speech?", "expect": "not_supported", "why": "not in library"},
-  {"q": "Did Shackleton reach the South Pole?", "expect": "answered_or_partial", "why": "the sources say his goal was crossing, not reaching it; must not invent"},
-  {"q": "What was Frederick Douglass's exact date of birth?", "expect": "answered_or_partial", "why": "he says he does not know it"},
-  {"q": "What did Machiavelli think of the internet?", "expect": "not_supported", "why": "anachronism"},
-  {"q": "Which emperor did Marcus Aurelius defeat at the battle of Hastings?", "expect": "not_supported", "why": "false premise"}
+ {
+  "q": "How did Frederick Douglass learn to read?",
+  "expect": "answered",
+  "must_cite": "douglass-narrative"
+ },
+ {
+  "q": "What did Marcus Aurelius learn from his grandfather Verus?",
+  "expect": "answered",
+  "must_cite": "aurelius-meditations"
+ },
+ {
+  "q": "How does Caesar describe the division of Gaul?",
+  "expect": "answered",
+  "must_cite": "caesar-gallic-war"
+ },
+ {
+  "q": "What does Sun Tzu say about the use of spies?",
+  "expect": "answered",
+  "must_cite": "suntzu-art-of-war"
+ },
+ {
+  "q": "According to Machiavelli, is it better for a prince to be loved or feared?",
+  "expect": "answered",
+  "must_cite": "machiavelli-prince"
+ },
+ {
+  "q": "How did Benjamin Franklin arrive in Philadelphia?",
+  "expect": "answered",
+  "must_cite": "franklin-autobiography"
+ },
+ {
+  "q": "What virtues did Benjamin Franklin list in his plan for moral perfection?",
+  "expect": "answered",
+  "must_cite": "franklin-autobiography"
+ },
+ {
+  "q": "What did Lincoln say at Gettysburg?",
+  "expect": "answered",
+  "must_cite": "lincoln-papers"
+ },
+ {
+  "q": "What did Lincoln say about a house divided?",
+  "expect": "answered",
+  "must_cite": "lincoln-papers"
+ },
+ {
+  "q": "How did Napoleon express his feelings for Josephine in his first letters?",
+  "expect": "answered",
+  "must_cite": "napoleon-letters-josephine"
+ },
+ {
+  "q": "How did Gandhi feel about his child marriage?",
+  "expect": "answered",
+  "must_cite": "gandhi-autobiography"
+ },
+ {
+  "q": "What happened to Gandhi on the train at Maritzburg?",
+  "expect": "answered",
+  "must_cite": "gandhi-autobiography"
+ },
+ {
+  "q": "How was Olaudah Equiano kidnapped?",
+  "expect": "answered",
+  "must_cite": "equiano-narrative"
+ },
+ {
+  "q": "How did Equiano describe the slave ship?",
+  "expect": "answered",
+  "must_cite": "equiano-narrative"
+ },
+ {
+  "q": "How did Booker T. Washington get to Hampton Institute?",
+  "expect": "answered",
+  "must_cite": "washington-up-from-slavery"
+ },
+ {
+  "q": "What happened to Shackleton's ship Endurance?",
+  "expect": "answered",
+  "must_cite": "shackleton-south"
+ },
+ {
+  "q": "How did Shackleton reach South Georgia?",
+  "expect": "answered",
+  "must_cite": "shackleton-south"
+ },
+ {
+  "q": "What did Lincoln write to Grant about Vicksburg?",
+  "expect": "answered",
+  "must_cite": "lincoln-papers"
+ },
+ {
+  "q": "What does Marcus Aurelius say about death?",
+  "expect": "answered",
+  "must_cite": "aurelius-meditations"
+ },
+ {
+  "q": "How did Caesar build the bridge over the Rhine?",
+  "expect": "answered",
+  "must_cite": "caesar-gallic-war"
+ },
+ {
+  "q": "What did Caesar say when he crossed the Rubicon?",
+  "expect": "not_supported",
+  "why": "Rubicon is in the Civil War, not in the library"
+ },
+ {
+  "q": "What did Gandhi say during the Salt March of 1930?",
+  "expect": "not_supported",
+  "why": "autobiography ends in 1921"
+ },
+ {
+  "q": "How did Lincoln feel when he was shot at Ford's Theatre?",
+  "expect": "not_supported",
+  "why": "no source covers his death"
+ },
+ {
+  "q": "What did Napoleon say at Waterloo?",
+  "expect": "not_supported",
+  "why": "letters to Josephine end in 1812"
+ },
+ {
+  "q": "What was Cleopatra's opinion of Caesar?",
+  "expect": "not_supported",
+  "why": "no Cleopatra source"
+ },
+ {
+  "q": "What did Martin Luther King Jr. say in his I Have a Dream speech?",
+  "expect": "not_supported",
+  "why": "not in library"
+ },
+ {
+  "q": "Did Shackleton reach the South Pole?",
+  "expect": "answered_or_partial",
+  "why": "the sources say his goal was crossing, not reaching it; must not invent"
+ },
+ {
+  "q": "What was Frederick Douglass's exact date of birth?",
+  "expect": "answered_or_partial",
+  "why": "he says he does not know it"
+ },
+ {
+  "q": "What did Machiavelli think of the internet?",
+  "expect": "not_supported",
+  "why": "anachronism"
+ },
+ {
+  "q": "Which emperor did Marcus Aurelius defeat at the battle of Hastings?",
+  "expect": "not_supported",
+  "why": "false premise"
+ },
+ {
+  "q": "What did Pericles say about Athens in the funeral oration?",
+  "expect": "answered",
+  "must_cite": "thucydides-peloponnesian-war"
+ },
+ {
+  "q": "Why did Madison think a large republic controls the effects of faction?",
+  "expect": "answered",
+  "must_cite": "federalist-papers"
+ },
+ {
+  "q": "What does the Anglo-Saxon Chronicle say about King Alfred fighting the Danes?",
+  "expect": "answered",
+  "must_cite": "anglo-saxon-chronicle"
+ },
+ {
+  "q": "How did Xenophon describe the Greeks first seeing the sea?",
+  "expect": "answered",
+  "must_cite": "xenophon-anabasis"
+ },
+ {
+  "q": "How did Grant describe Lee's surrender at Appomattox?",
+  "expect": "answered",
+  "must_cite": "grant-memoirs"
+ },
+ {
+  "q": "How do Lincoln and Grant describe the fall of Vicksburg?",
+  "expect": "answered",
+  "must_cite": "grant-memoirs",
+  "compare": true
+ },
+ {
+  "q": "Compare how Frederick Douglass and Booker T. Washington describe learning to read.",
+  "expect": "answered",
+  "must_cite": "washington-up-from-slavery",
+  "compare": true
+ },
+ {
+  "q": "What did Pericles say about the atomic bomb?",
+  "expect": "not_supported",
+  "why": "anachronism"
+ }
 ]

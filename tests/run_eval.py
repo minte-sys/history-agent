@@ -47,10 +47,11 @@ def main():
         )
         ok_cite = "must_cite" not in c or any(cl["passage_id"].startswith(c["must_cite"] + ":") for cl in r["claims"])
         ok_quotes = all(quote_in(cl["quote"], corpus.get(cl["passage_id"])["text"]) for cl in r["claims"])
-        ok = ok_verdict and ok_cite and ok_quotes
+        ok_compare = not c.get("compare") or r.get("compare")
+        ok = ok_verdict and ok_cite and ok_quotes and ok_compare
         passed += ok
         print(f"{'PASS' if ok else 'FAIL'} [{time.time() - t:4.1f}s] {r['verdict']:<14} {c['q']}"
-              + ("" if ok else f"  (expected {c['expect']}; cite ok={ok_cite}; quotes ok={ok_quotes})"))
+              + ("" if ok else f"  (expected {c['expect']}; cite ok={ok_cite}; quotes ok={ok_quotes}; compare ok={ok_compare})"))
         results.append({**c, "result": r, "pass": ok})
     (HERE / "results.json").write_text(json.dumps(results, indent=2, ensure_ascii=False))
     dropped = sum(len(x["result"].get("dropped", [])) for x in results)
