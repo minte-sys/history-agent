@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Primary Source History</title>
+<style>
+:root{
+  --bg:#f7f4ee; --panel:#fffdf8; --ink:#1f1b16; --muted:#6b6257; --line:#e2dbcf;
+  --accent:#8a3b12; --ok:#2f6b3a; --warn:#946200; --no:#8a2a2a; --quote:#f1ebe0;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#16140f; --panel:#1f1c16; --ink:#ece6da; --muted:#a39a8b; --line:#38322a;
+         --accent:#e0915e; --ok:#7fc08b; --warn:#e2b44f; --no:#e48a8a; --quote:#2a261e; }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 Georgia,"Iowan Old Style",serif}
+main{max-width:760px;margin:0 auto;padding:40px 16px 80px}
+h1{font-size:2rem;margin:0 0 4px;letter-spacing:-.01em}
+.lede{color:var(--muted);margin:0 0 28px;font-family:system-ui,sans-serif;font-size:15px}
+form{display:flex;gap:8px}
+input{flex:1;min-width:0;padding:12px 14px;font:inherit;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink)}
+button{padding:12px 18px;border:0;border-radius:8px;background:var(--accent);color:#fff;font:600 15px system-ui,sans-serif;cursor:pointer}
+button:disabled{opacity:.5;cursor:wait}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 0}
+.chip{background:none;color:var(--muted);border:1px solid var(--line);padding:4px 10px;border-radius:99px;font:13px system-ui,sans-serif}
+#out{margin-top:32px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:20px 22px}
+.badge{display:inline-block;font:600 12px system-ui,sans-serif;text-transform:uppercase;letter-spacing:.05em;padding:2px 8px;border-radius:4px;border:1px solid currentColor;margin-bottom:10px}
+.answered{color:var(--ok)} .partial{color:var(--warn)} .not_supported{color:var(--no)}
+.summary{font-size:1.1rem;margin:0 0 16px}
+.claim{border-top:1px solid var(--line);padding:14px 0 4px}
+.claim p{margin:0 0 8px}
+blockquote{margin:0 0 8px;padding:10px 14px;background:var(--quote);border-left:3px solid var(--accent);font-style:italic}
+.cite{font:13px/1.5 system-ui,sans-serif;color:var(--muted)}
+.cite a{color:var(--accent)}
+.ctx{font:15px/1.6 Georgia,serif;white-space:pre-wrap;color:var(--ink);background:var(--quote);padding:10px 14px;margin-top:8px;border-radius:6px;max-height:320px;overflow:auto}
+.caveat{font:14px system-ui,sans-serif;color:var(--muted);margin-top:14px}
+details.lib{margin-top:40px;font:14px system-ui,sans-serif;color:var(--muted)}
+details.lib li{margin:2px 0}
+.err{color:var(--no);font-family:system-ui,sans-serif}
+.spin{font:14px system-ui,sans-serif;color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+  <h1>Primary Source History</h1>
+  <p class="lede">Ask about a famous figure. Every answer quotes their own words, checked word for word against the source. If the sources don't say, it tells you so.</p>
+  <form id="f">
+    <input id="q" placeholder="e.g. What did Marcus Aurelius learn from his father?" autocomplete="off" maxlength="500" required>
+    <button id="b">Ask</button>
+  </form>
+  <div class="chips" id="chips"></div>
+  <div id="out"></div>
+  <details class="lib"><summary>What's in the library</summary><ul id="lib"></ul></details>
+</main>
+<script>
+const examples=["How did Frederick Douglass learn to read?","What did Napoleon write to Josephine from Italy?","How does Caesar describe the Gauls?","What does Sun Tzu say about spies?","Did Lincoln write about the Emancipation Proclamation?","What happened to the Endurance?"];
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+examples.forEach(e=>{const b=document.createElement("button");b.className="chip";b.type="button";b.textContent=e;b.onclick=()=>{$("#q").value=e;ask()};$("#chips").append(b)});
+fetch("/api/library").then(r=>r.json()).then(ws=>{$("#lib").innerHTML=ws.map(w=>`<li><b>${esc(w.figure)}</b>: ${esc(w.work)} (${esc(w.date)}${w.translator?`, tr. ${esc(w.translator)}`:""})</li>`).join("")});
+const labels={answered:"Answered from sources",partial:"Partly answered",not_supported:"Not in the sources"};
+async function ask(){
+  const q=$("#q").value.trim(); if(!q) return;
+  $("#b").disabled=true; $("#out").innerHTML='<p class="spin">Searching the sources…</p>';
+  try{
+    const r=await fetch("/api/ask",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({question:q})});
+    const d=await r.json();
+    if(!r.ok) throw new Error(d.detail||"Request failed");
+    render(d);
+  }catch(e){ $("#out").innerHTML=`<p class="err">${esc(e.message)}</p>`; }
+  finally{ $("#b").disabled=false; }
+}
+function render(d){
+  const claims=d.claims.map((c,i)=>`
+    <div class="claim">
+      <p>${esc(c.statement)}</p>
+      <blockquote>“${esc(c.quote)}”</blockquote>
+      <div class="cite">${esc(c.author)}, <i>${esc(c.work)}</i>, ${esc(c.section)}${c.translator?`, translated by ${esc(c.translator)}`:""}${c.editor?`, edited by ${esc(c.editor)}`:""}.
+        <a href="${esc(c.url)}" target="_blank" rel="noopener">Source</a> ·
+        <a href="#" data-pid="${esc(c.passage_id)}" data-i="${i}">Show passage</a></div>
+      <div id="ctx${i}"></div>
+    </div>`).join("");
+  $("#out").innerHTML=`<div class="card">
+    <span class="badge ${d.verdict}">${labels[d.verdict]||d.verdict}</span>
+    <p class="summary">${esc(d.summary)}</p>${claims}
+    ${d.caveats?`<p class="caveat"><b>Note:</b> ${esc(d.caveats)}</p>`:""}</div>`;
+  document.querySelectorAll("[data-pid]").forEach(a=>a.onclick=async ev=>{
+    ev.preventDefault(); const box=$("#ctx"+a.dataset.i);
+    if(box.innerHTML){box.innerHTML="";return}
+    const p=await (await fetch("/api/passage/"+encodeURIComponent(a.dataset.pid))).json();
+    box.innerHTML=`<div class="ctx">${esc(p.text)}</div>`;
+  });
+}
+$("#f").onsubmit=e=>{e.preventDefault();ask()};
+</script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+corpus/cache/
+corpus/raw/
+__pycache__/
+tests/results.json
+*.whl
