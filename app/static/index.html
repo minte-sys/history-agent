@@ -95,6 +95,18 @@ textarea{width:100%;min-height:84px;padding:12px 14px;font:inherit;border:1px so
 .verdictbox{margin-top:16px;padding:12px 14px;border:1px dashed var(--line);border-radius:8px}
 .verdictbox p{margin:0 0 6px}
 .verdictbox small{font:12px system-ui,sans-serif;color:var(--muted)}
+/* voices */
+.voicebar{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;font:13px system-ui,sans-serif;color:var(--muted);margin:0 0 12px}
+.voicebar label{display:inline-flex;gap:6px;align-items:center;cursor:pointer}
+.voicebar input{width:auto;margin:0}
+.hear{background:none;color:var(--accent);border:1px solid var(--line);padding:3px 10px;font:600 12px system-ui,sans-serif;border-radius:999px;cursor:pointer;text-transform:none;letter-spacing:0}
+.hear:hover{border-color:var(--accent)}
+.hear.on{background:var(--accent);border-color:var(--accent);color:var(--panel)}
+.msg.fig .who{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.dside h3{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.line.speaking,.ooc.speaking,.verdictbox p.speaking{background:var(--quote);box-shadow:0 0 0 6px var(--quote);border-radius:4px}
+.dside.speaking{border-color:var(--accent)}
+.notts .hear,.notts .voicebar{display:none}
 /* map and timeline */
 .mapbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 10px}
 .mapbar select{width:auto;padding:8px 10px;font:14px system-ui,sans-serif;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);max-width:100%}
@@ -160,6 +172,7 @@ mark{background:var(--mark);color:inherit;padding:0 1px}
     <div id="chat" hidden>
       <div class="chatbar"><h2 id="chatname"></h2><button class="ghost" id="switch" type="button">Talk to someone else</button></div>
       <p class="fnote" id="chatnote"></p>
+      <div class="voicebar"><label><input type="checkbox" class="vauto"> Speak replies aloud</label><label><input type="checkbox" class="vquotes"> Read the original quotes, not the plain version</label></div>
       <div class="log" id="log" aria-live="polite"></div>
       <form id="cf"><input id="cq" autocomplete="off" maxlength="500" required aria-label="Your message"><button id="cb">Send</button></form>
       <div class="chips" id="cchips"></div>
@@ -178,6 +191,7 @@ mark{background:var(--mark);color:inherit;padding:0 1px}
   <section class="panel" id="p-debate" hidden>
     <p class="hint">Put one question to two to four figures and see their answers side by side. Each side is built only from that person's own writings, with the exact quote under every line. Someone whose writings don't touch the question sits it out instead of being given an opinion.</p>
     <div class="pickrow" id="dpeople" aria-label="Pick figures"></div>
+    <div class="voicebar"><label><input type="checkbox" class="vauto"> Play the debate aloud when it's ready</label><label><input type="checkbox" class="vquotes"> Read the original quotes, not the plain version</label></div>
     <form id="df"><input id="dq" placeholder="e.g. Is violence ever justified?" autocomplete="off" maxlength="500" required aria-label="Debate question"><button id="db">Debate</button></form>
     <div class="chips" id="dchips"></div>
     <div id="dout" aria-live="polite" style="margin-top:28px"></div>
@@ -323,9 +337,111 @@ $("#f").onsubmit=e=>{e.preventDefault();ask()};
 function showTab(t){
   document.querySelectorAll(".tab").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===t));
   document.querySelectorAll(".panel").forEach(p=>p.hidden=p.id!=="p-"+t);
+  stopSpeech();
   if(t==="map") initMap();
 }
 document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{showTab(b.dataset.tab); history.replaceState(null,"","#"+b.dataset.tab);});
+
+/* ---------- voices ---------- */
+// Free text to speech from the browser (Web Speech API). Voices come from the visitor's device,
+// so each figure gets the closest match there: preferred accents in order, then a male voice,
+// with pitch and pace to tell them apart. The narrator (out-of-character notes, verdicts) is
+// given a contrasting voice.
+const TTS="speechSynthesis" in window && "SpeechSynthesisUtterance" in window;
+if(!TTS) document.documentElement.classList.add("notts");
+const VOICES={
+  "caesar-gallic-war":{langs:["en-GB"],pitch:.8,rate:.95},
+  "aurelius-meditations":{langs:["en-GB"],pitch:.9,rate:.88},
+  "suntzu-art-of-war":{langs:["en-GB","en-US"],pitch:.75,rate:.85},
+  "machiavelli-prince":{langs:["en-IE","en-GB"],pitch:1.05,rate:1.05},
+  "franklin-autobiography":{langs:["en-US"],pitch:1.05,rate:1},
+  "douglass-narrative":{langs:["en-US"],pitch:.7,rate:.92},
+  "washington-up-from-slavery":{langs:["en-US"],pitch:.95,rate:1},
+  "gandhi-autobiography":{langs:["en-IN"],pitch:1.1,rate:.9},
+  "equiano-narrative":{langs:["en-NG","en-ZA","en-GB"],pitch:.95,rate:.95},
+  "shackleton-south":{langs:["en-IE","en-GB"],pitch:.9,rate:1.05},
+  "napoleon-letters-josephine":{langs:["en-GB"],pitch:1.1,rate:1.15},
+  "lincoln-papers":{langs:["en-US"],pitch:1.15,rate:.88},
+  "grant-memoirs":{langs:["en-US"],pitch:.85,rate:.95},
+  "xenophon-anabasis":{langs:["en-GB"],pitch:1,rate:.95},
+};
+const NARRATOR={langs:["en-US","en-GB"],pitch:1,rate:1,female:true};
+const MALE=/\bmale\b|daniel|david|george|james|alex\b|fred|guy|ryan|thomas|rishi|aaron|arthur|oliver|mark|richard|william|liam|connor|brian|eric|christopher|roger|andrew|ravi|prabhat|gordon|reed|rocko|eddy|ralph|albert|junior|abeo|luke|tom\b|jorge|paul/i;
+const FEMALE=/female|samantha|victoria|karen|zira|susan|hazel|moira|tessa|fiona|veena|serena|kate|libby|sonia|natasha|aria\b|jenny|emma|ava\b|allison|heera|neerja|catherine|martha|nicky|shelley|sandy|flo\b|grandma|ezinne|leah|clara|michelle|joanna|kimberly|salli|amy\b|olivia/i;
+let allVoices=[];
+function loadVoices(){ if(TTS) allVoices=speechSynthesis.getVoices().filter(v=>/^en/i.test(v.lang)); }
+if(TTS){ loadVoices(); speechSynthesis.addEventListener&&speechSynthesis.addEventListener("voiceschanged",loadVoices); }
+function voiceScore(v,prof){
+  const lang=v.lang.replace("_","-").toLowerCase();
+  const li=prof.langs.findIndex(l=>lang===l.toLowerCase());
+  let s=li>=0?100-li*20:10;
+  const m=MALE.test(v.name), f=FEMALE.test(v.name);
+  if(prof.female){ if(f) s+=30; if(m) s-=30; } else { if(m) s+=30; if(f) s-=40; }
+  if(/natural|neural|enhanced|premium|online/i.test(v.name)) s+=8;   // the nicer voices, where offered
+  return s;
+}
+// Choose a voice for each speaker, keeping speakers in one conversation on different voices when the device has enough.
+function castVoices(ids){
+  const used=new Set(), cast={};
+  ids.forEach(id=>{
+    const prof=id?VOICES[id]||NARRATOR:NARRATOR;
+    const ranked=allVoices.map(v=>[voiceScore(v,prof),v]).sort((a,b)=>b[0]-a[0]);
+    if(!ranked.length){ cast[id]={prof,voice:null}; return; }
+    const free=ranked.find(([s,v])=>!used.has(v.voiceURI)&&s>=ranked[0][0]-45);
+    const v=(free||ranked[0])[1]; used.add(v.voiceURI); cast[id]={prof,voice:v};
+  });
+  return cast;
+}
+const vset={auto:true,quotes:false};
+try{ Object.assign(vset,JSON.parse(localStorage.getItem("voice")||"{}")); }catch(e){}
+function syncVoiceBoxes(){
+  document.querySelectorAll(".vauto").forEach(b=>b.checked=vset.auto);
+  document.querySelectorAll(".vquotes").forEach(b=>b.checked=vset.quotes);
+}
+document.querySelectorAll(".vauto,.vquotes").forEach(b=>b.onchange=()=>{
+  vset[b.classList.contains("vauto")?"auto":"quotes"]=b.checked; syncVoiceBoxes();
+  try{ localStorage.setItem("voice",JSON.stringify(vset)); }catch(e){}
+  if(!vset.auto && b.classList.contains("vauto")) stopSpeech();
+});
+syncVoiceBoxes();
+let spk={token:0,done:null};
+function clearSpeaking(){ document.querySelectorAll(".speaking").forEach(e=>e.classList.remove("speaking")); }
+function stopSpeech(){
+  spk.token++; if(TTS) speechSynthesis.cancel(); clearSpeaking();
+  const f=spk.done; spk.done=null; f&&f();
+}
+// items: [{id: persona id or null for the narrator, text, el: element to highlight, box: column to highlight}]
+function speakItems(items,done){
+  stopSpeech(); if(!TTS||!items.length){ done&&done(); return; }
+  const tok=spk.token; spk.done=done;
+  const cast=castVoices([...new Set(items.map(x=>x.id))]);
+  let i=0;
+  const next=()=>{
+    if(tok!==spk.token) return;
+    clearSpeaking();
+    if(i>=items.length){ const f=spk.done; spk.done=null; f&&f(); return; }
+    const it=items[i++], c=cast[it.id];
+    const u=new SpeechSynthesisUtterance(it.text);
+    if(c.voice){ u.voice=c.voice; u.lang=c.voice.lang; } else u.lang=c.prof.langs[0];
+    u.pitch=c.prof.pitch; u.rate=c.prof.rate;
+    u.onend=next; u.onerror=next;
+    it.el&&it.el.classList.add("speaking"); it.box&&it.box.classList.add("speaking");
+    speechSynthesis.speak(u);
+  };
+  if(speechSynthesis.paused) speechSynthesis.resume();
+  next();
+}
+// What a figure says out loud for one line: the plain sentence, or their real words.
+function lineText(l){ return vset.quotes?l.quote:l.say; }
+// A play/stop button; play() must call speakItems with the given done callback.
+function hearButton(btn,label,play){
+  btn.textContent="🔊 "+label; btn.title="Play aloud";
+  btn.onclick=()=>{
+    if(btn.classList.contains("on")){ stopSpeech(); return; }
+    btn.classList.add("on"); btn.textContent="■ Stop";
+    play(()=>{ btn.classList.remove("on"); btn.textContent="🔊 "+label; });
+  };
+}
 
 /* ---------- ask the figure ---------- */
 const starters={
@@ -354,6 +470,7 @@ fetch("/api/figures").then(r=>r.json()).then(ps=>{
 });
 function startChat(id){
   const p=(window._people||[]).find(x=>x.id===id); if(!p) return;
+  stopSpeech();
   chat={id,name:p.name,short:p.short,history:[],turns:[]};
   $("#pick").hidden=true; $("#chat").hidden=false;
   $("#chatname").textContent=p.name;
@@ -363,12 +480,12 @@ function startChat(id){
   history.replaceState(null,"","#figure="+encodeURIComponent(id));
   $("#cq").focus();
 }
-$("#switch").onclick=()=>{ $("#chat").hidden=true; $("#pick").hidden=false; history.replaceState(null,"","#figure"); };
+$("#switch").onclick=()=>{ stopSpeech(); $("#chat").hidden=true; $("#pick").hidden=false; history.replaceState(null,"","#figure"); };
 function figMsgHTML(d,ti){
   const lines=d.lines.map((l,i)=>`<div class="line"><p>${esc(l.say)}</p>
     <blockquote data-t="${ti}" data-l="${i}" title="Click to read in context">“${esc(l.quote)}”</blockquote>
     <div class="cite"><i>${esc(l.work)}</i>, ${esc(String(l.section).replace(/[.\s]+$/,""))}${l.translator?`, tr. ${esc(l.translator)}`:""}. <a href="#" data-t="${ti}" data-l="${i}">Read in context</a>${mapLink(l.passage_id)}</div></div>`).join("");
-  return `<div class="msg fig"><div class="who">${esc(d.figure)}</div>${lines||`<p class="ooc">${esc(d.not_covered)}</p>`}</div>`;
+  return `<div class="msg fig" id="fm${ti}"><div class="who"><span>${esc(d.figure)}</span><button class="hear" type="button"></button></div>${lines||`<p class="ooc">${esc(d.not_covered)}</p>`}</div>`;
 }
 async function send(){
   const q=$("#cq").value.trim(); if(!q||!chat.id) return;
@@ -380,6 +497,12 @@ async function send(){
     const ti=chat.turns.push(d)-1;
     $("#typing").remove();
     $("#log").insertAdjacentHTML("beforeend",figMsgHTML(d,ti));
+    const box=$("#fm"+ti), hb=box.querySelector(".hear"), who=chat.id;
+    const play=done=>speakItems(d.lines.length
+      ? [...box.querySelectorAll(".line")].map((el,i)=>({id:who,text:lineText(d.lines[i]),el}))
+      : [{id:null,text:d.not_covered||"",el:box.querySelector(".ooc")}], done);
+    hearButton(hb,"Hear "+chat.short,play);
+    if(vset.auto && TTS) hb.click();
     chat.history.push({role:"user",text:q},{role:"figure",text:(d.lines.length?d.lines.map(l=>`${l.say} [quoting: "${l.quote}"]`).join(" "):"(not covered by my writings)").slice(0,1900)});
     chat.history=chat.history.slice(-12);
     document.querySelectorAll(`[data-t="${ti}"]`).forEach(el=>el.onclick=ev=>{ev.preventDefault(); openViewer(chat.turns[+el.dataset.t].lines[+el.dataset.l]);});
@@ -466,7 +589,7 @@ async function runDebate(){
 }
 function renderDebate(d){
   const n=d.sides.length;
-  const cols=d.sides.map((s,si)=>`<div class="dside"><h3>${esc(s.figure)}</h3><div class="dwork">${esc(s.work)}, ${esc(s.date)}</div>
+  const cols=d.sides.map((s,si)=>`<div class="dside" data-side="${si}"><h3><span>${esc(s.figure)}</span><button class="hear" type="button" data-hs="${si}"></button></h3><div class="dwork">${esc(s.work)}, ${esc(s.date)}</div>
     ${s.lines.length?s.lines.map((l,li)=>`<div class="line"><p>${esc(l.say)}</p>
       <blockquote data-s="${si}" data-l="${li}" title="Click to read in context">“${esc(l.quote)}”</blockquote>
       <div class="cite"><i>${esc(l.work)}</i>, ${esc(String(l.section).replace(/[.\s]+$/,""))}${l.translator?`, tr. ${esc(l.translator)}`:""}. <a href="#" data-s="${si}" data-l="${li}">Read in context</a>${mapLink(l.passage_id)}</div></div>`).join("")
@@ -474,13 +597,38 @@ function renderDebate(d){
     ${s.note?`<p class="fnote" style="margin:10px 0 0">${esc(s.note)}</p>`:""}</div>`).join("");
   const c=d.comparison;
   $("#dout").innerHTML=`<div class="card">
-    <div class="top"><p class="summary" style="margin:0 0 12px">${esc(d.question)}</p><button class="share" id="dshare" type="button">Copy link</button></div>
+    <div class="top"><p class="summary" style="margin:0 0 12px">${esc(d.question)}</p><span><button class="hear" id="dhear" type="button"></button> <button class="share" id="dshare" type="button">Copy link</button></span></div>
     <div class="dcols n${n}">${cols}</div>
     ${c?`<div class="verdictbox">${c.agree?`<p><b>Where they agree:</b> ${esc(c.agree)}</p>`:""}${c.differ?`<p><b>Where they differ:</b> ${esc(c.differ)}</p>`:""}<small>Written only from the quotes above.</small></div>`:""}
     <p class="caveat">Each person answers from their own text alone. They never read each other, so this shows where their writings stand, not a conversation they had.</p></div>`;
   document.querySelectorAll("#dout [data-s]").forEach(el=>el.onclick=ev=>{ev.preventDefault(); openViewer(d.sides[+el.dataset.s].lines[+el.dataset.l]);});
   $("#dshare").onclick=()=>{ navigator.clipboard&&navigator.clipboard.writeText(location.href).then(()=>{$("#dshare").textContent="Link copied"}); };
   bindMapLinks($("#dout"));
+  bindDebateVoices(d);
+}
+// The whole debate takes turns: each side's first line, then each side's second line, and so on,
+// then the narrator reads where they agree and differ.
+function debateItems(d,only){
+  const sides=[...document.querySelectorAll("#dout .dside")];
+  const items=[], per=d.sides.map((s,si)=>{
+    const box=sides[si];
+    if(!s.lines.length) return [{id:null,text:s.not_covered||"",el:box.querySelector(".ooc"),box}];
+    const els=box.querySelectorAll(".line");
+    return s.lines.map((l,li)=>({id:s.figure_id,text:lineText(l),el:els[li],box}));
+  });
+  if(only!=null) return per[only];
+  const most=Math.max(...per.map(p=>p.length));
+  const talk=per.filter((p,si)=>d.sides[si].lines.length), out=per.filter((p,si)=>!d.sides[si].lines.length);
+  for(let r=0;r<most;r++) talk.forEach(p=>{ if(p[r]) items.push(p[r]); });
+  out.forEach(p=>items.push(...p));   // those who sit it out are mentioned after the exchange
+  const vb=document.querySelectorAll("#dout .verdictbox p");
+  vb.forEach(p=>items.push({id:null,text:p.textContent,el:p}));
+  return items;
+}
+function bindDebateVoices(d){
+  hearButton($("#dhear"),"Hear them debate",done=>speakItems(debateItems(d),done));
+  document.querySelectorAll("#dout [data-hs]").forEach(b=>hearButton(b,"Hear",done=>speakItems(debateItems(d,+b.dataset.hs),done)));
+  if(vset.auto && TTS) $("#dhear").click();
 }
 $("#df").onsubmit=e=>{e.preventDefault();runDebate()};
 
