@@ -84,6 +84,38 @@ textarea{width:100%;min-height:84px;padding:12px 14px;font:inherit;border:1px so
 .verified{color:var(--ok)} .misquoted{color:var(--warn)} .not_found{color:var(--no)}
 .yousaid{font:14px system-ui,sans-serif;color:var(--muted);margin:0 0 6px}
 .share{background:none;color:var(--accent);border:1px solid var(--line);padding:4px 12px;font-size:13px}
+/* debate */
+.pickrow{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
+.pickrow .chip[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:#fff}
+.dcols{display:grid;gap:14px;margin-top:6px}
+@media (min-width:720px){ .dcols.n2{grid-template-columns:1fr 1fr} .dcols.n3{grid-template-columns:1fr 1fr 1fr} .dcols.n4{grid-template-columns:1fr 1fr} }
+.dside{border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--bg)}
+.dside h3{margin:0;font-size:1.1rem}
+.dside .dwork{font:12px/1.4 system-ui,sans-serif;color:var(--muted);margin:2px 0 10px}
+.verdictbox{margin-top:16px;padding:12px 14px;border:1px dashed var(--line);border-radius:8px}
+.verdictbox p{margin:0 0 6px}
+.verdictbox small{font:12px system-ui,sans-serif;color:var(--muted)}
+/* map and timeline */
+.mapbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 10px}
+.mapbar select{width:auto;padding:8px 10px;font:14px system-ui,sans-serif;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);max-width:100%}
+.mapbar .chip[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:#fff}
+#map{height:min(460px,62vh);border:1px solid var(--line);border-radius:10px;background:var(--quote)}
+.tl{position:relative;height:46px;margin:10px 4px 0;border-bottom:2px solid var(--line)}
+.tl button{position:absolute;bottom:-7px;width:12px;height:12px;padding:0;border-radius:50%;border:2px solid var(--panel);transform:translateX(-50%)}
+.tl button.sel{width:18px;height:18px;bottom:-10px;outline:2px solid var(--ink)}
+.tlscale{display:flex;justify-content:space-between;font:12px system-ui,sans-serif;color:var(--muted);margin:12px 0 0}
+.tlnow{font:13px system-ui,sans-serif;color:var(--muted);margin:6px 0 0;min-height:1.4em}
+.pinlist{margin:16px 0 0;padding:0;list-style:none;max-height:420px;overflow:auto;border-top:1px solid var(--line)}
+.pinlist li{border-bottom:1px solid var(--line);padding:10px 4px;cursor:pointer;font:14px/1.45 system-ui,sans-serif}
+.pinlist li:hover,.pinlist li.sel{background:var(--quote)}
+.pinlist .yr{display:inline-block;min-width:92px;color:var(--muted)}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:baseline}
+.leaflet-popup-content{font:14px/1.5 system-ui,sans-serif;max-height:240px;overflow:auto}
+.leaflet-popup-content blockquote{font:italic 14px/1.5 Georgia,serif;margin:6px 0}
+.ppin{border-top:1px solid #ddd;padding-top:8px;margin-top:8px}
+.ppin:first-child{border-top:0;margin-top:0;padding-top:0}
+.maplink{white-space:nowrap}
+@media (prefers-color-scheme:dark){ .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.85) contrast(.9)} }
 /* source viewer */
 dialog{border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--ink);padding:0;width:min(760px,calc(100vw - 32px));max-height:calc(100vh - 48px)}
 dialog::backdrop{background:rgba(0,0,0,.45)}
@@ -106,6 +138,8 @@ mark{background:var(--mark);color:inherit;padding:0 1px}
     <button class="tab" role="tab" data-tab="ask" aria-selected="true">Ask a question</button>
     <button class="tab" role="tab" data-tab="figure" aria-selected="false">Ask the figure</button>
     <button class="tab" role="tab" data-tab="myth" aria-selected="false">Myth buster</button>
+    <button class="tab" role="tab" data-tab="debate" aria-selected="false">Debate</button>
+    <button class="tab" role="tab" data-tab="map" aria-selected="false">Map &amp; timeline</button>
   </div>
 
   <section class="panel" id="p-ask">
@@ -140,6 +174,27 @@ mark{background:var(--mark);color:inherit;padding:0 1px}
     </form>
     <div class="chips" id="mchips"></div>
     <div id="mout" aria-live="polite" style="margin-top:28px"></div>
+  </section>
+  <section class="panel" id="p-debate" hidden>
+    <p class="hint">Put one question to two to four figures and see their answers side by side. Each side is built only from that person's own writings, with the exact quote under every line. Someone whose writings don't touch the question sits it out instead of being given an opinion.</p>
+    <div class="pickrow" id="dpeople" aria-label="Pick figures"></div>
+    <form id="df"><input id="dq" placeholder="e.g. Is violence ever justified?" autocomplete="off" maxlength="500" required aria-label="Debate question"><button id="db">Debate</button></form>
+    <div class="chips" id="dchips"></div>
+    <div id="dout" aria-live="polite" style="margin-top:28px"></div>
+  </section>
+
+  <section class="panel" id="p-map" hidden>
+    <p class="hint">Moments from the sources, pinned to where and when they happened or were written. Click a pin to read the quote, or play the timeline. Places and years are our placement and are approximate; every quote is taken word for word from the text.</p>
+    <div class="mapbar">
+      <select id="mfig" aria-label="Show figure"><option value="">All figures</option></select>
+      <span id="eras" class="pickrow" style="margin:0"></span>
+      <button class="chip" id="mplay" type="button">▶ Play timeline</button>
+    </div>
+    <div id="map" role="region" aria-label="Map of sources"></div>
+    <div class="tl" id="tl" aria-label="Timeline"></div>
+    <div class="tlscale"><span id="tlmin"></span><span id="tlmax"></span></div>
+    <p class="tlnow" id="tlnow"></p>
+    <ul class="pinlist" id="pinlist"></ul>
   </section>
   <details class="lib"><summary>What's in the library</summary><ul id="lib"></ul></details>
 </main>
@@ -209,7 +264,7 @@ function claimHTML(c,i){
     <p>${esc(c.statement)}</p>
     <blockquote data-i="${i}" title="Click to read in context">“${esc(c.quote)}”</blockquote>
     <div class="cite">${esc(c.author)}, <i>${esc(c.work)}</i>, ${esc(String(c.section).replace(/[.\s]+$/,""))}${c.translator?`, translated by ${esc(c.translator)}`:""}${c.editor?`, edited by ${esc(c.editor)}`:""}.
-      <a href="#" data-i="${i}">Read in context</a> · <a href="${esc(c.url)}" target="_blank" rel="noopener">Original ↗</a></div>
+      <a href="#" data-i="${i}">Read in context</a> · <a href="${esc(c.url)}" target="_blank" rel="noopener">Original ↗</a>${mapLink(c.passage_id)}</div>
   </div>`;
 }
 function render(d){
@@ -268,6 +323,7 @@ $("#f").onsubmit=e=>{e.preventDefault();ask()};
 function showTab(t){
   document.querySelectorAll(".tab").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===t));
   document.querySelectorAll(".panel").forEach(p=>p.hidden=p.id!=="p-"+t);
+  if(t==="map") initMap();
 }
 document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{showTab(b.dataset.tab); history.replaceState(null,"","#"+b.dataset.tab);});
 
@@ -294,6 +350,7 @@ fetch("/api/figures").then(r=>r.json()).then(ps=>{
   $("#people").innerHTML=ps.map(p=>`<button class="person" type="button" data-id="${esc(p.id)}">${esc(p.name)}<small>${esc(p.work)}, ${esc(p.date)}</small></button>`).join("");
   document.querySelectorAll(".person").forEach(b=>b.onclick=()=>startChat(b.dataset.id));
   const m=location.hash.match(/^#figure=(.+)$/); if(m){ showTab("figure"); startChat(decodeURIComponent(m[1])); }
+  peopleReady();
 });
 function startChat(id){
   const p=(window._people||[]).find(x=>x.id===id); if(!p) return;
@@ -310,7 +367,7 @@ $("#switch").onclick=()=>{ $("#chat").hidden=true; $("#pick").hidden=false; hist
 function figMsgHTML(d,ti){
   const lines=d.lines.map((l,i)=>`<div class="line"><p>${esc(l.say)}</p>
     <blockquote data-t="${ti}" data-l="${i}" title="Click to read in context">“${esc(l.quote)}”</blockquote>
-    <div class="cite"><i>${esc(l.work)}</i>, ${esc(String(l.section).replace(/[.\s]+$/,""))}${l.translator?`, tr. ${esc(l.translator)}`:""}. <a href="#" data-t="${ti}" data-l="${i}">Read in context</a></div></div>`).join("");
+    <div class="cite"><i>${esc(l.work)}</i>, ${esc(String(l.section).replace(/[.\s]+$/,""))}${l.translator?`, tr. ${esc(l.translator)}`:""}. <a href="#" data-t="${ti}" data-l="${i}">Read in context</a>${mapLink(l.passage_id)}</div></div>`).join("");
   return `<div class="msg fig"><div class="who">${esc(d.figure)}</div>${lines||`<p class="ooc">${esc(d.not_covered)}</p>`}</div>`;
 }
 async function send(){
@@ -358,7 +415,7 @@ function renderCheck(d){
     ${s?`<div class="claim"><p><b>What the source actually says:</b></p>
       <blockquote id="msrc" title="Click to read in context">“${esc(s.quote)}”</blockquote>
       <div class="cite">${esc(s.author)}, <i>${esc(s.work)}</i>, ${esc(String(s.section).replace(/[.\s]+$/,""))}${s.date?` (${esc(s.date)})`:""}${s.translator?`, translated by ${esc(s.translator)}`:""}.
-        <a href="#" id="mctx">Read in context</a> · <a href="${esc(s.url)}" target="_blank" rel="noopener">Original ↗</a></div></div>`:""}
+        <a href="#" id="mctx">Read in context</a> · <a href="${esc(s.url)}" target="_blank" rel="noopener">Original ↗</a>${mapLink(s.passage_id)}</div></div>`:""}
     ${d.verdict==="not_found"?`<p class="caveat">This library holds a few dozen works, so "not found" means it isn't in these texts. It may still come from a speech, letter or book that isn't here. See <a href="#" id="mlib">what's in the library</a>.</p>`:""}
   </div>`;
   if(s){ $("#msrc").onclick=$("#mctx").onclick=ev=>{ev.preventDefault();openViewer(s)}; }
@@ -367,12 +424,187 @@ function renderCheck(d){
 }
 $("#mf").onsubmit=e=>{e.preventDefault();mcheck()};
 
+/* ---------- debate ---------- */
+const debates=[
+  {q:"Is violence ever justified?",with:["gandhi-autobiography","douglass-narrative"]},
+  {q:"What makes a good leader?",with:["machiavelli-prince","aurelius-meditations","suntzu-art-of-war"]},
+  {q:"How should a person face hardship?",with:["shackleton-south","aurelius-meditations","washington-up-from-slavery"]},
+  {q:"Why does education matter?",with:["douglass-narrative","washington-up-from-slavery","franklin-autobiography"]},
+  {q:"Is war ever just?",with:["grant-memoirs","lincoln-papers","suntzu-art-of-war"]},
+  {q:"Should a ruler keep his promises?",with:["machiavelli-prince","lincoln-papers"]}
+];
+let dSel=[], dPending=null, lastDebate=null;
+function shortOf(id){ const p=(window._people||[]).find(x=>x.id===id); return p?p.short:id; }
+function drawDebatePeople(){
+  $("#dpeople").innerHTML=(window._people||[]).map(p=>`<button type="button" class="chip" data-id="${esc(p.id)}" aria-pressed="${dSel.includes(p.id)}">${esc(p.name)}</button>`).join("");
+  document.querySelectorAll("#dpeople .chip").forEach(b=>b.onclick=()=>{
+    const id=b.dataset.id;
+    if(dSel.includes(id)) dSel=dSel.filter(x=>x!==id);
+    else{ if(dSel.length>=4) dSel.shift(); dSel.push(id); }
+    drawDebatePeople();
+  });
+}
+debates.forEach(d=>{const b=document.createElement("button");b.className="chip";b.type="button";
+  b.textContent=`${d.q} (${d.with.map(shortOf).join(" vs ")})`;b.dataset.q=d.q;
+  b.onclick=()=>{dSel=[...d.with];drawDebatePeople();$("#dq").value=d.q;runDebate()};$("#dchips").append(b)});
+function peopleReady(){
+  drawDebatePeople();
+  document.querySelectorAll("#dchips .chip").forEach((b,i)=>b.textContent=`${debates[i].q} (${debates[i].with.map(shortOf).join(" vs ")})`);
+  if(dPending){ dSel=dPending.with.filter(id=>(window._people||[]).some(p=>p.id===id)).slice(0,4); drawDebatePeople(); $("#dq").value=dPending.q; dPending=null; runDebate(); }
+}
+async function runDebate(){
+  const q=$("#dq").value.trim(); if(!q) return;
+  if(dSel.length<2){ $("#dout").innerHTML='<p class="err">Pick at least two people to debate.</p>'; return; }
+  $("#db").disabled=true; $("#dout").innerHTML=`<p class="spin">${esc(dSel.map(shortOf).join(", "))} are looking through their writings…</p>`;
+  try{
+    const r=await fetch("/api/debate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({question:q,figures:dSel})});
+    const d=await r.json(); if(!r.ok) throw new Error(typeof d.detail==="string"?d.detail:"Request failed");
+    lastDebate=d; renderDebate(d);
+    history.replaceState(null,"","?debate="+encodeURIComponent(q)+"&with="+dSel.map(encodeURIComponent).join(",")+"#debate");
+  }catch(e){ $("#dout").innerHTML=`<p class="err">${esc(e.message)}</p>`; }
+  finally{ $("#db").disabled=false; }
+}
+function renderDebate(d){
+  const n=d.sides.length;
+  const cols=d.sides.map((s,si)=>`<div class="dside"><h3>${esc(s.figure)}</h3><div class="dwork">${esc(s.work)}, ${esc(s.date)}</div>
+    ${s.lines.length?s.lines.map((l,li)=>`<div class="line"><p>${esc(l.say)}</p>
+      <blockquote data-s="${si}" data-l="${li}" title="Click to read in context">“${esc(l.quote)}”</blockquote>
+      <div class="cite"><i>${esc(l.work)}</i>, ${esc(String(l.section).replace(/[.\s]+$/,""))}${l.translator?`, tr. ${esc(l.translator)}`:""}. <a href="#" data-s="${si}" data-l="${li}">Read in context</a>${mapLink(l.passage_id)}</div></div>`).join("")
+      :`<p class="ooc">${esc(s.not_covered)}</p>`}
+    ${s.note?`<p class="fnote" style="margin:10px 0 0">${esc(s.note)}</p>`:""}</div>`).join("");
+  const c=d.comparison;
+  $("#dout").innerHTML=`<div class="card">
+    <div class="top"><p class="summary" style="margin:0 0 12px">${esc(d.question)}</p><button class="share" id="dshare" type="button">Copy link</button></div>
+    <div class="dcols n${n}">${cols}</div>
+    ${c?`<div class="verdictbox">${c.agree?`<p><b>Where they agree:</b> ${esc(c.agree)}</p>`:""}${c.differ?`<p><b>Where they differ:</b> ${esc(c.differ)}</p>`:""}<small>Written only from the quotes above.</small></div>`:""}
+    <p class="caveat">Each person answers from their own text alone. They never read each other, so this shows where their writings stand, not a conversation they had.</p></div>`;
+  document.querySelectorAll("#dout [data-s]").forEach(el=>el.onclick=ev=>{ev.preventDefault(); openViewer(d.sides[+el.dataset.s].lines[+el.dataset.l]);});
+  $("#dshare").onclick=()=>{ navigator.clipboard&&navigator.clipboard.writeText(location.href).then(()=>{$("#dshare").textContent="Link copied"}); };
+  bindMapLinks($("#dout"));
+}
+$("#df").onsubmit=e=>{e.preventDefault();runDebate()};
+
+/* ---------- map and timeline ---------- */
+const COLORS=["#8a3b12","#2f6b3a","#1f5f99","#946200","#7b3fa0","#b0306a","#2b8a8a","#5a5a00","#c05a00","#3b4aa8","#6b4226","#2f7d5b","#a83b3b","#4f6b8a","#8a2a6b","#5b8a2f","#a06e00"];
+let mapData=null, lmap=null, mState={fig:"",era:"all",sel:null,playing:null}, markers=[];
+const ERAS=[["all","All time",-1e4,1e4],["ancient","Ancient",-1e4,499],["medieval","500–1500",500,1500],["early","1500–1799",1501,1799],["1800s","1800s",1800,1899],["1900s","1900s",1900,1e4]];
+const mapReady=fetch("/api/map").then(r=>r.json()).then(d=>{
+  mapData=d; const srcs=[...new Set(d.pins.map(p=>p.source_id))];
+  d.color={}; srcs.forEach((s,i)=>d.color[s]=COLORS[i%COLORS.length]);
+  bindMapLinks(document); return d;
+});
+function mapLink(pid){
+  if(!pid) return "";
+  const [src,rest]=pid.split(":"); const key=src+":"+String(rest||"").split(".")[0];
+  return `<span class="maplink" data-mapkey="${esc(key)}" hidden> · <a href="#">📍 On the map</a></span>`;
+}
+function bindMapLinks(root){
+  if(!mapData) return;
+  root.querySelectorAll("[data-mapkey]").forEach(el=>{
+    const id=mapData.sections[el.dataset.mapkey]; if(!id) return;
+    el.hidden=false; el.querySelector("a").onclick=ev=>{ev.preventDefault(); stopPlay(); showTab("map"); history.replaceState(null,"","#map"); mState.fig=""; mState.era="all"; $("#mfig").value=""; initMap().then(()=>{ if(!lmap) return; drawEras(); drawPins(false); selectPin(id,true); });};
+  });
+}
+let mlPending=false;
+new MutationObserver(()=>{ if(mlPending) return; mlPending=true; requestAnimationFrame(()=>{ mlPending=false; bindMapLinks(document); }); }).observe(document.querySelector("main"),{childList:true,subtree:true});
+function loadLeaflet(){
+  if(window.L) return Promise.resolve();
+  return new Promise((ok,fail)=>{
+    const css=document.createElement("link"); css.rel="stylesheet"; css.href="/static/vendor/leaflet/leaflet.css"; document.head.append(css);
+    const js=document.createElement("script"); js.src="/static/vendor/leaflet/leaflet.js"; js.onload=ok; js.onerror=fail; document.head.append(js);
+  });
+}
+let mapInit=null;
+function initMap(){
+  if(mapInit) return mapInit;
+  mapInit=Promise.all([loadLeaflet(),mapReady]).then(()=>{
+    lmap=L.map("map",{worldCopyJump:true}).setView([35,15],2);
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:12,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'}).addTo(lmap);
+    const figs=[...new Map(mapData.pins.map(p=>[p.source_id,p.figure])).entries()].sort((a,b)=>a[1].localeCompare(b[1]));
+    $("#mfig").innerHTML='<option value="">All figures</option>'+figs.map(([id,f])=>`<option value="${esc(id)}">${esc(f)}</option>`).join("");
+    $("#mfig").onchange=()=>{mState.fig=$("#mfig").value; stopPlay(); if(!visiblePins().length) mState.era="all"; drawEras(); drawPins(true);};
+    drawEras(); drawPins(true);
+    const m=location.hash.match(/^#map=(.+)$/); if(m) selectPin(decodeURIComponent(m[1]),true);
+  }).catch(()=>{ $("#map").innerHTML='<p class="err" style="padding:16px">The map could not load. Check your connection and reload the page.</p>'; });
+  return mapInit;
+}
+function visiblePins(){
+  const era=ERAS.find(e=>e[0]===mState.era)||ERAS[0];
+  return mapData.pins.filter(p=>(!mState.fig||p.source_id===mState.fig)&&p.year>=era[2]&&p.year<=era[3]);
+}
+function drawEras(){
+  const has=e=>mapData.pins.some(p=>(!mState.fig||p.source_id===mState.fig)&&p.year>=e[2]&&p.year<=e[3]);
+  $("#eras").innerHTML=ERAS.filter(has).map(e=>`<button type="button" class="chip" data-era="${e[0]}" aria-pressed="${mState.era===e[0]}">${e[1]}</button>`).join("");
+  document.querySelectorAll("#eras .chip").forEach(b=>b.onclick=()=>{mState.era=b.dataset.era; stopPlay(); drawEras(); drawPins(true);});
+}
+const yl=p=>p.year_label;
+function pinHTML(p){
+  const cut=p.cut&&/^[a-z]/.test(p.quote)?"…":"", end=p.cut&&!/[.!?;:]["”’']?$/.test(p.quote)?"…":"";
+  const persona=(window._people||[]).some(x=>x.id===p.source_id);
+  return `<div class="ppin"><b>${esc(p.title)}</b><br><span class="cite">${esc(p.place)} · ${esc(yl(p))}</span>
+    <blockquote>“${cut}${esc(p.quote.replace(/^[“"‘']+|[”"’']+$/g,""))}${end}”</blockquote>
+    <div class="cite">${esc(p.author)}, <i>${esc(p.work)}</i>, ${esc(String(p.section).replace(/[.\s]+$/,""))}${p.translator?`, tr. ${esc(p.translator)}`:""}.<br>
+    <a href="#" data-pin="${esc(p.id)}" data-act="ctx">Read in context</a>${persona?` · <a href="#" data-pin="${esc(p.id)}" data-act="ask">Ask ${esc(shortOf(p.source_id))} about this</a>`:""}</div></div>`;
+}
+function drawPins(fit){
+  markers.forEach(m=>m.remove()); markers=[];
+  const pins=visiblePins();
+  const groups=new Map();
+  pins.forEach(p=>{const k=p.lat.toFixed(2)+","+p.lon.toFixed(2); (groups.get(k)||groups.set(k,[]).get(k)).push(p);});
+  groups.forEach(ps=>{
+    const m=L.circleMarker([ps[0].lat,ps[0].lon],{radius:Math.min(6+ps.length,14),color:"#fff",weight:2,fillColor:mapData.color[ps[0].source_id],fillOpacity:.9});
+    m.bindPopup(()=>`<b>${esc(ps[0].place)}</b>${ps.length>1?` · ${ps.length} moments`:""}<hr style="border:0;border-top:1px solid #ddd">`+ps.map(pinHTML).join(""),{maxWidth:320});
+    m.on("popupopen",e=>bindPopup(e.popup.getElement()));
+    m._pins=ps; m.addTo(lmap); markers.push(m);
+  });
+  if(fit&&pins.length){ const b=L.latLngBounds(pins.map(p=>[p.lat,p.lon])); lmap.fitBounds(b.pad(0.15),{maxZoom:7,animate:false}); }
+  // timeline strip
+  const ys=pins.map(p=>p.year), lo=Math.min(...ys), hi=Math.max(...ys), span=Math.max(1,hi-lo);
+  const fmt=y=>y<0?`${-y} BCE`:String(y);
+  $("#tlmin").textContent=pins.length?fmt(lo):""; $("#tlmax").textContent=pins.length?fmt(hi):"";
+  $("#tl").innerHTML=pins.map(p=>`<button type="button" data-pin="${esc(p.id)}" title="${esc(yl(p)+": "+p.title)}" aria-label="${esc(yl(p)+": "+p.title)}" style="left:${(4+92*(p.year-lo)/span).toFixed(2)}%;background:${mapData.color[p.source_id]}"></button>`).join("");
+  $("#tl").querySelectorAll("button").forEach(b=>b.onclick=()=>{stopPlay(); selectPin(b.dataset.pin,true);});
+  $("#pinlist").innerHTML=pins.map(p=>`<li data-pin="${esc(p.id)}"><span class="yr">${esc(yl(p))}</span><span class="dot" style="background:${mapData.color[p.source_id]}"></span><b>${esc(p.title)}</b> · ${esc(p.figure)} · ${esc(p.place)}</li>`).join("");
+  $("#pinlist").querySelectorAll("li").forEach(li=>li.onclick=()=>{stopPlay(); selectPin(li.dataset.pin,true);});
+  $("#tlnow").textContent=`${pins.length} moments shown`;
+}
+function bindPopup(el){
+  el.querySelectorAll("[data-pin]").forEach(a=>a.onclick=ev=>{
+    ev.preventDefault(); const p=mapData.pins.find(x=>x.id===a.dataset.pin); if(!p) return;
+    if(a.dataset.act==="ctx") openViewer(p);
+    else{ showTab("figure"); startChat(p.source_id); $("#cq").value=`Tell me about ${p.title.charAt(0).toLowerCase()+p.title.slice(1)}.`; $("#cq").focus(); }
+  });
+}
+function selectPin(id,pan){
+  const p=mapData.pins.find(x=>x.id===id); if(!p||!lmap) return;
+  if(!visiblePins().some(x=>x.id===id)){ mState.era="all"; mState.fig=""; $("#mfig").value=""; drawEras(); drawPins(false); }
+  mState.sel=id;
+  const m=markers.find(m=>m._pins.some(x=>x.id===id));
+  if(m){ if(pan) lmap.setView(m.getLatLng(),Math.max(lmap.getZoom(),5),{animate:false}); m.openPopup(); }
+  $("#tl").querySelectorAll("button").forEach(b=>b.classList.toggle("sel",b.dataset.pin===id));
+  $("#pinlist").querySelectorAll("li").forEach(li=>{const on=li.dataset.pin===id; li.classList.toggle("sel",on); if(on) li.scrollIntoView({block:"nearest"});});
+  $("#tlnow").textContent=`${yl(p)} · ${p.title} · ${p.place}`;
+  history.replaceState(null,"","#map="+encodeURIComponent(id));
+}
+function stopPlay(){ if(mState.playing){ clearInterval(mState.playing); mState.playing=null; $("#mplay").textContent="▶ Play timeline"; } }
+$("#mplay").onclick=()=>{
+  if(mState.playing) return stopPlay();
+  const pins=visiblePins(); if(!pins.length) return;
+  let i=Math.max(0,pins.findIndex(p=>p.id===mState.sel)+1); if(i>=pins.length) i=0;
+  $("#mplay").textContent="⏸ Pause";
+  const step=()=>{ if(i>=pins.length) return stopPlay(); selectPin(pins[i++].id,true); };
+  step(); mState.playing=setInterval(step,3500);
+};
+
 /* ---------- start on the right tab ---------- */
 {
   const params=new URLSearchParams(location.search);
   if(params.get("check")){ showTab("myth"); $("#mq").value=params.get("check"); mcheck(); }
   else if(location.hash.startsWith("#figure")) showTab("figure");
   else if(location.hash==="#myth") showTab("myth");
+  else if(params.get("debate")){ showTab("debate"); dPending={q:params.get("debate"),with:(params.get("with")||"").split(",")}; }
+  else if(location.hash==="#debate") showTab("debate");
+  else if(location.hash.startsWith("#map")) showTab("map");
 }
 </script>
 </body>

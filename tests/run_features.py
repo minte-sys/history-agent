@@ -1,8 +1,11 @@
-"""Check Ask the figure and Myth buster against known cases.
+"""Check Ask the figure, Myth buster, Debate mode and the map against known cases.
 
 Myth buster: each case has the verdict we expect and, where there is one, the source it must cite.
 Ask the figure: answerable questions must come back with verified quotes from that figure only;
 out-of-period questions must come back "not covered" with no lines.
+Debate: each side's quotes must be verbatim and from that figure's own text; sides expected to speak
+must have lines, and out-of-period questions must leave every side silent.
+Map: every pin's quote must be verbatim in its passage (no model needed).
 Run: python tests/run_features.py   (uses the model; pauses between calls for free-tier limits)
 """
 import os
@@ -12,6 +15,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "app"))
 from agent import ModelBusy, quote_in  # noqa: E402
+from debate import debate  # noqa: E402
 from figure import reply  # noqa: E402
 from mythbuster import check  # noqa: E402
 from search import Corpus  # noqa: E402
@@ -37,6 +41,25 @@ FIGURES = [
 ]
 
 
+DEBATES = [
+    ("Is violence ever justified?", ["gandhi-autobiography", "douglass-narrative"], True),
+    ("What makes a good leader?", ["machiavelli-prince", "suntzu-art-of-war"], True),
+    ("What do you think of television?", ["lincoln-papers", "caesar-gallic-war"], False),
+]
+
+
+def check_map(corpus) -> tuple[int, int]:
+    import json
+    pins = json.loads((Path(__file__).resolve().parent.parent / "corpus" / "map.json").read_text())["pins"]
+    bad = [p["id"] for p in pins
+           if not (corpus.get(p["passage_id"]) and quote_in(p["quote"], corpus.get(p["passage_id"])["text"])
+                   and p["passage_id"].startswith(p["source_id"] + ":")
+                   and -90 <= p["lat"] <= 90 and -180 <= p["lon"] <= 180)]
+    ok = not bad and len({p["id"] for p in pins}) == len(pins)
+    print(f"{'PASS' if ok else 'FAIL'} map    {len(pins)} pins, all quotes verbatim" + (f"; bad: {bad[:5]}" if bad else ""))
+    return int(ok), 1
+
+
 def retry(fn, *a):
     for attempt in range(4):
         try:
@@ -49,7 +72,7 @@ def retry(fn, *a):
 
 def main():
     corpus = Corpus()
-    passed = total = 0
+    passed, total = check_map(corpus)
     for text, want, src in MYTHS:
         r = retry(check, text, corpus)
         s = r.get("source")
@@ -65,6 +88,15 @@ def main():
         ok = own and r["covered"] == covered
         passed += ok; total += 1
         print(f"{'PASS' if ok else 'FAIL'} figure {'covered' if r['covered'] else 'not covered':<11} {pid}: {q}")
+        time.sleep(PAUSE)
+    for q, figs, speaks in DEBATES:
+        r = retry(debate, q, figs, corpus)
+        own = all(l["passage_id"].startswith(s["figure_id"] + ":") and quote_in(l["quote"], corpus.get(l["passage_id"])["text"])
+                  for s in r["sides"] for l in s["lines"])
+        spoke = [bool(s["lines"]) for s in r["sides"]]
+        ok = own and (all(spoke) if speaks else not any(spoke))
+        passed += ok; total += 1
+        print(f"{'PASS' if ok else 'FAIL'} debate {' / '.join(('speaks' if x else 'silent') for x in spoke):<16} {q}")
         time.sleep(PAUSE)
     print(f"\n{passed}/{total} passed")
     sys.exit(0 if passed == total else 1)
