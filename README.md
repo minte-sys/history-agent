@@ -53,6 +53,14 @@ question the agent says so instead of guessing.
    verbatim. Napoleon's letters are pinned automatically from the place and date at the head of each
    letter. Citations elsewhere on the site get an "On the map" link when their section is pinned.
    Places and years are approximate editorial placements, and the page says so.
+10. **Voices** (`app/static/index.html`): in Ask the figure and Debate the figures speak their replies
+   aloud, using the browser's free built-in text to speech (Web Speech API), so there is no server cost.
+   Each figure has a voice profile (preferred accent, such as British for Caesar, Irish then British for
+   Shackleton and Indian English for Gandhi, plus pitch and pace), matched to the voices on the
+   visitor's device; figures in one debate get different voices where the device has enough. Debates
+   play as turns (each side's first line, then each side's second), then a narrator voice reads where
+   they agree and differ. Visitors can switch auto-play off, or have the figures read their original
+   quotes instead of the plain version. Voices differ by device and browser.
 
 ## Run locally
 
