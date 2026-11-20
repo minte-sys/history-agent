@@ -10,9 +10,13 @@ from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
+import json
+
 from agent import ModelBusy, ModelError, answer
+from debate import MAX_FIGURES, MIN_FIGURES, debate
 from figure import Turn, personas, reply
 from mythbuster import check
 from search import Corpus
@@ -20,6 +24,8 @@ from search import Corpus
 app = FastAPI(title="Primary Source History Agent")
 corpus = Corpus()
 STATIC = Path(__file__).parent / "static"
+app.mount("/static", StaticFiles(directory=STATIC), name="static")
+MAP = json.loads((Path(__file__).resolve().parent.parent / "corpus" / "map.json").read_text())
 
 # Simple per-IP rate limit so a public page can't run up the API bill.
 RATE = 20          # questions
@@ -45,6 +51,11 @@ class FigureMsg(BaseModel):
     figure: str = Field(max_length=80)
     message: str = Field(min_length=2, max_length=500)
     history: list[Turn] = Field(default_factory=list, max_length=20)
+
+
+class DebateBody(BaseModel):
+    question: str = Field(min_length=3, max_length=500)
+    figures: list[str] = Field(min_length=MIN_FIGURES, max_length=MAX_FIGURES)
 
 
 class CheckBody(BaseModel):
@@ -125,6 +136,28 @@ def myth_check(body: CheckBody, request: Request):
     """Myth buster: is this quote or claim in the sources? Works without the model for exact quotes."""
     _guard(request)
     return check(body.text.strip(), corpus)
+
+
+@app.post("/api/debate")
+def debate_endpoint(body: DebateBody, request: Request):
+    """Debate mode: one question, two to four figures, each answering only in their own words."""
+    allowed = {p["id"] for p in personas(corpus)}
+    figs = list(dict.fromkeys(body.figures))
+    if len(figs) < MIN_FIGURES or any(f not in allowed for f in figs):
+        raise HTTPException(400, f"Pick {MIN_FIGURES} to {MAX_FIGURES} different figures from the list.")
+    _guard(request)
+    try:
+        return debate(body.question.strip(), figs, corpus)
+    except ModelBusy:
+        raise HTTPException(503, "The service is busy. Please try again in a minute.")
+    except ModelError:
+        raise HTTPException(502, "Something went wrong while answering. Please try again.")
+
+
+@app.get("/api/map")
+def map_pins():
+    """Pins for the map and timeline: place, year and a verbatim quote from the source."""
+    return MAP
 
 
 @app.get("/healthz")

@@ -40,6 +40,19 @@ question the agent says so instead of guessing.
    fuzzy-matches the wording, and a "verified" verdict needs at least 90% word-level similarity to a real
    passage by the person named. If the model is busy, exact quotes are still checked by code alone.
    Results have shareable links (`/?check=...#myth`).
+8. **Debate** (`app/debate.py`, `/api/debate`): put one question to two to four of the figures and get
+   their answers side by side. Each side is built only from that figure's own text, every line carries
+   a quote checked word for word, and a quote from anyone else's text is rejected. Figures whose
+   writings don't touch the question sit it out. A short "where they agree / differ" note is written
+   afterwards from the verified lines only. Three model calls per debate, whatever the number of
+   figures. Results have shareable links (`/?debate=...&with=a,b#debate`).
+9. **Map and timeline** (`corpus/places.json`, `scripts/build_map.py`, `/api/map`): about 260 moments
+   pinned to a place and year, shown on an OpenStreetMap map (Leaflet, served from `app/static/vendor`)
+   with a timeline, era filters and a "play" mode. `places.json` holds the curated pins (place, year,
+   section and search words); the build script picks each quote from the text itself and checks it is
+   verbatim. Napoleon's letters are pinned automatically from the place and date at the head of each
+   letter. Citations elsewhere on the site get an "On the map" link when their section is pinned.
+   Places and years are approximate editorial placements, and the page says so.
 
 ## Run locally
 
@@ -50,6 +63,7 @@ export GEMINI_API_KEY=...               # free key from aistudio.google.com; nev
 python scripts/fetch_sources.py         # only needed to rebuild the corpus
 python scripts/build_index.py
 python scripts/build_embeddings.py     # needs spaCy + en_core_web_md, see the script
+python scripts/build_map.py            # map pins, after build_index.py
 cd app && uvicorn server:app --port 8000
 ```
 
@@ -57,7 +71,7 @@ cd app && uvicorn server:app --port 8000
 
 ```bash
 python tests/run_eval.py                # 38 questions: answers, refusals and comparisons
-python tests/run_features.py            # Ask the figure and Myth buster: 12 known cases
+python tests/run_features.py            # Ask the figure, Myth buster, Debate and map: 16 checks
 ```
 
 ## Add a source
