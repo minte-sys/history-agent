@@ -28,6 +28,19 @@ question the agent says so instead of guessing.
    ("How do X and Y describe…") are searched per figure and shown side by side. Voice input and
    read-aloud use the browser's built-in speech features. A per-IP limit allows 20 questions an hour.
 
+6. **Ask the figure** (`app/figure.py`, `/api/figures`, `/api/figure`): chat with one of 14 figures
+   whose texts are their own words. Each reply is 1 to 4 lines; every line is a first-person
+   paraphrase plus the exact quote behind it, checked word for word and required to come from that
+   figure's own text. Questions their writings don't cover (modern things, events after their death)
+   get an out-of-character "not covered" instead of an invented answer. Anonymous chronicles, the
+   three-author Federalist and Thucydides (built around other people's speeches) are left out.
+7. **Myth buster** (`app/mythbuster.py`, `/api/check`): paste a quote or claim and get **Verified**,
+   **Misquoted** (wording changed, meaning twisted, or someone else wrote it) or **Not found**, with the
+   real passage. Candidates come from 3-word phrase search plus keyword and meaning search; code
+   fuzzy-matches the wording, and a "verified" verdict needs at least 90% word-level similarity to a real
+   passage by the person named. If the model is busy, exact quotes are still checked by code alone.
+   Results have shareable links (`/?check=...#myth`).
+
 ## Run locally
 
 ```bash
@@ -44,6 +57,7 @@ cd app && uvicorn server:app --port 8000
 
 ```bash
 python tests/run_eval.py                # 38 questions: answers, refusals and comparisons
+python tests/run_features.py            # Ask the figure and Myth buster: 12 known cases
 ```
 
 ## Add a source

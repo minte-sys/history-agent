@@ -49,6 +49,41 @@ details.lib{margin-top:40px;font:14px system-ui,sans-serif;color:var(--muted)}
 details.lib li{margin:2px 0}
 .err{color:var(--no);font-family:system-ui,sans-serif}
 .spin{font:14px system-ui,sans-serif;color:var(--muted)}
+/* tabs */
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:0 0 22px;overflow-x:auto}
+.tab{background:none;color:var(--muted);border:0;border-bottom:3px solid transparent;border-radius:0;padding:10px 14px;white-space:nowrap}
+.tab[aria-selected=true]{color:var(--ink);border-bottom-color:var(--accent)}
+.panel[hidden]{display:none}
+#mf{display:block}
+.chip{text-align:left}
+@media (max-width:480px){ .tab{padding:10px 9px;font-size:14px} }
+.hint{color:var(--muted);font:14px/1.5 system-ui,sans-serif;margin:0 0 14px}
+/* ask the figure */
+.people{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.person{background:var(--panel);color:var(--ink);border:1px solid var(--line);text-align:left;padding:10px 12px;font:600 14px/1.3 system-ui,sans-serif}
+.person small{display:block;font-weight:400;color:var(--muted);margin-top:2px}
+.person:hover{border-color:var(--accent)}
+.chatbar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.chatbar h2{margin:0;font-size:1.3rem}
+.chatbar .ghost{background:none;color:var(--accent);border:1px solid var(--line);padding:6px 12px;font-size:13px}
+.log{display:flex;flex-direction:column;gap:12px;margin:0 0 14px}
+.msg{max-width:92%;padding:12px 14px;border-radius:10px;border:1px solid var(--line)}
+.msg.user{align-self:flex-end;background:var(--accent);color:#fff;border-color:var(--accent);font-family:system-ui,sans-serif;font-size:15px}
+.msg.fig{align-self:flex-start;background:var(--panel)}
+.msg.fig .who{font:600 12px system-ui,sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:6px}
+.line{margin:0 0 12px}
+.line:last-child{margin-bottom:0}
+.line p{margin:0 0 6px}
+.line blockquote{font-size:15px}
+.ooc{font:14px/1.5 system-ui,sans-serif;color:var(--muted);font-style:italic;margin:0}
+.fnote{font:13px system-ui,sans-serif;color:var(--muted);margin:0 0 12px}
+/* myth buster */
+textarea{width:100%;min-height:84px;padding:12px 14px;font:inherit;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);resize:vertical}
+.row{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.stamp{display:inline-block;font:800 22px/1 system-ui,sans-serif;text-transform:uppercase;letter-spacing:.06em;padding:8px 14px;border:3px solid currentColor;border-radius:6px;transform:rotate(-2deg);margin:0 0 14px}
+.verified{color:var(--ok)} .misquoted{color:var(--warn)} .not_found{color:var(--no)}
+.yousaid{font:14px system-ui,sans-serif;color:var(--muted);margin:0 0 6px}
+.share{background:none;color:var(--accent);border:1px solid var(--line);padding:4px 12px;font-size:13px}
 /* source viewer */
 dialog{border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--ink);padding:0;width:min(760px,calc(100vw - 32px));max-height:calc(100vh - 48px)}
 dialog::backdrop{background:rgba(0,0,0,.45)}
@@ -66,7 +101,14 @@ mark{background:var(--mark);color:inherit;padding:0 1px}
 <body>
 <main>
   <h1>Primary Source History</h1>
-  <p class="lede">Ask about a famous figure, or compare two. Every answer quotes their own words, checked word for word against the source. Click a quote to read it in context. If the sources don't say, it tells you so.</p>
+  <p class="lede">Every answer quotes famous figures' own words, checked word for word against the source. Click a quote to read it in context. If the sources don't say, it tells you so.</p>
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" data-tab="ask" aria-selected="true">Ask a question</button>
+    <button class="tab" role="tab" data-tab="figure" aria-selected="false">Ask the figure</button>
+    <button class="tab" role="tab" data-tab="myth" aria-selected="false">Myth buster</button>
+  </div>
+
+  <section class="panel" id="p-ask">
   <form id="f">
     <input id="q" placeholder="e.g. How do Lincoln and Grant describe Vicksburg?" autocomplete="off" maxlength="500" required aria-label="Your question">
     <button type="button" id="mic" class="icon" title="Ask by voice" aria-label="Ask by voice">🎤</button>
@@ -74,6 +116,31 @@ mark{background:var(--mark);color:inherit;padding:0 1px}
   </form>
   <div class="chips" id="chips"></div>
   <div id="out" aria-live="polite"></div>
+  </section>
+
+  <section class="panel" id="p-figure" hidden>
+    <div id="pick">
+      <p class="hint">Pick someone to talk to. They can only answer with their own written words, and each reply shows the exact quote it comes from. If they never wrote about it, they'll say so.</p>
+      <div class="people" id="people"></div>
+    </div>
+    <div id="chat" hidden>
+      <div class="chatbar"><h2 id="chatname"></h2><button class="ghost" id="switch" type="button">Talk to someone else</button></div>
+      <p class="fnote" id="chatnote"></p>
+      <div class="log" id="log" aria-live="polite"></div>
+      <form id="cf"><input id="cq" autocomplete="off" maxlength="500" required aria-label="Your message"><button id="cb">Send</button></form>
+      <div class="chips" id="cchips"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="p-myth" hidden>
+    <p class="hint">Paste a famous quote or "fact" from the internet. It's checked against the original texts: <b>Verified</b>, <b>Misquoted</b> or <b>Not found</b>, with the real passage.</p>
+    <form id="mf">
+      <textarea id="mq" maxlength="600" required aria-label="Quote or claim to check" placeholder='e.g. "It is better to be feared than loved." - Machiavelli'></textarea>
+      <div class="row"><button id="mb">Check it</button></div>
+    </form>
+    <div class="chips" id="mchips"></div>
+    <div id="mout" aria-live="polite" style="margin-top:28px"></div>
+  </section>
   <details class="lib"><summary>What's in the library</summary><ul id="lib"></ul></details>
 </main>
 
@@ -196,6 +263,117 @@ $("#vread").onclick=()=>{ const m=$("#vbody mark"); speak(m?m.parentElement.text
 $("#viewer").addEventListener("click",e=>{ if(e.target.id==="viewer") $("#viewer").close(); });
 
 $("#f").onsubmit=e=>{e.preventDefault();ask()};
+
+/* ---------- tabs ---------- */
+function showTab(t){
+  document.querySelectorAll(".tab").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===t));
+  document.querySelectorAll(".panel").forEach(p=>p.hidden=p.id!=="p-"+t);
+}
+document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{showTab(b.dataset.tab); history.replaceState(null,"","#"+b.dataset.tab);});
+
+/* ---------- ask the figure ---------- */
+const starters={
+  "lincoln-papers":["Why did you issue the Emancipation Proclamation?","What do you think of slavery?","Why must the Union be preserved?"],
+  "gandhi-autobiography":["What is satyagraha?","Why did you start wearing khadi?","What happened to you in South Africa?"],
+  "caesar-gallic-war":["Why did you cross the Rhine?","Who were the bravest of the Gauls?","What happened at Alesia?"],
+  "douglass-narrative":["How did you learn to read?","How did you escape?","What did you think of Mr. Covey?"],
+  "franklin-autobiography":["What were your thirteen virtues?","How did you come to Philadelphia?","What did you think of Whitefield?"],
+  "aurelius-meditations":["How should I deal with difficult people?","What did you learn from your father?","Are you afraid of death?"],
+  "machiavelli-prince":["Is it better to be loved or feared?","Should a prince keep his word?","What do you think of mercenaries?"],
+  "suntzu-art-of-war":["How do you win without fighting?","How should spies be used?","When should you attack?"],
+  "shackleton-south":["What happened to the Endurance?","How did you reach South Georgia?","How did you keep the men's spirits up?"],
+  "napoleon-letters-josephine":["Do you miss Josephine?","How goes the campaign in Italy?","Why are you jealous?"],
+  "grant-memoirs":["How did Vicksburg fall?","What happened at Appomattox?","What did you think of the Mexican War?"],
+  "washington-up-from-slavery":["How did you get to Hampton?","How did Tuskegee begin?","What did you say at Atlanta?"],
+  "equiano-narrative":["Where were you born?","What was the slave ship like?","How did you buy your freedom?"],
+  "xenophon-anabasis":["Why did the Greeks march with Cyrus?","What happened when you saw the sea?","How were the generals killed?"]
+};
+let chat={id:null,name:"",short:"",history:[],turns:[]};
+fetch("/api/figures").then(r=>r.json()).then(ps=>{
+  window._people=ps;
+  $("#people").innerHTML=ps.map(p=>`<button class="person" type="button" data-id="${esc(p.id)}">${esc(p.name)}<small>${esc(p.work)}, ${esc(p.date)}</small></button>`).join("");
+  document.querySelectorAll(".person").forEach(b=>b.onclick=()=>startChat(b.dataset.id));
+  const m=location.hash.match(/^#figure=(.+)$/); if(m){ showTab("figure"); startChat(decodeURIComponent(m[1])); }
+});
+function startChat(id){
+  const p=(window._people||[]).find(x=>x.id===id); if(!p) return;
+  chat={id,name:p.name,short:p.short,history:[],turns:[]};
+  $("#pick").hidden=true; $("#chat").hidden=false;
+  $("#chatname").textContent=p.name;
+  $("#chatnote").textContent=`Speaking only from ${p.work} (${p.date}${p.translator?`, translated by ${p.translator}`:""}). The sentence in plain text is a paraphrase; the quote underneath is the real source.`+(p.note?" "+p.note:"");
+  $("#log").innerHTML=""; $("#cq").placeholder=`Ask ${p.short} something…`;
+  $("#cchips").innerHTML=""; (starters[id]||[]).forEach(t=>{const b=document.createElement("button");b.className="chip";b.type="button";b.textContent=t;b.onclick=()=>{$("#cq").value=t;send()};$("#cchips").append(b)});
+  history.replaceState(null,"","#figure="+encodeURIComponent(id));
+  $("#cq").focus();
+}
+$("#switch").onclick=()=>{ $("#chat").hidden=true; $("#pick").hidden=false; history.replaceState(null,"","#figure"); };
+function figMsgHTML(d,ti){
+  const lines=d.lines.map((l,i)=>`<div class="line"><p>${esc(l.say)}</p>
+    <blockquote data-t="${ti}" data-l="${i}" title="Click to read in context">“${esc(l.quote)}”</blockquote>
+    <div class="cite"><i>${esc(l.work)}</i>, ${esc(String(l.section).replace(/[.\s]+$/,""))}${l.translator?`, tr. ${esc(l.translator)}`:""}. <a href="#" data-t="${ti}" data-l="${i}">Read in context</a></div></div>`).join("");
+  return `<div class="msg fig"><div class="who">${esc(d.figure)}</div>${lines||`<p class="ooc">${esc(d.not_covered)}</p>`}</div>`;
+}
+async function send(){
+  const q=$("#cq").value.trim(); if(!q||!chat.id) return;
+  $("#cq").value=""; $("#cb").disabled=true;
+  $("#log").insertAdjacentHTML("beforeend",`<div class="msg user">${esc(q)}</div><p class="spin" id="typing">${esc(chat.short)} is looking through their writings…</p>`);
+  try{
+    const r=await fetch("/api/figure",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({figure:chat.id,message:q,history:chat.history})});
+    const d=await r.json(); if(!r.ok) throw new Error(d.detail||"Request failed");
+    const ti=chat.turns.push(d)-1;
+    $("#typing").remove();
+    $("#log").insertAdjacentHTML("beforeend",figMsgHTML(d,ti));
+    chat.history.push({role:"user",text:q},{role:"figure",text:(d.lines.length?d.lines.map(l=>`${l.say} [quoting: "${l.quote}"]`).join(" "):"(not covered by my writings)").slice(0,1900)});
+    chat.history=chat.history.slice(-12);
+    document.querySelectorAll(`[data-t="${ti}"]`).forEach(el=>el.onclick=ev=>{ev.preventDefault(); openViewer(chat.turns[+el.dataset.t].lines[+el.dataset.l]);});
+    $("#log").lastElementChild.scrollIntoView({block:"nearest",behavior:"smooth"});
+  }catch(e){ const t=$("#typing"); if(t) t.outerHTML=`<p class="err">${esc(e.message)}</p>`; }
+  finally{ $("#cb").disabled=false; $("#cq").focus(); }
+}
+$("#cf").onsubmit=e=>{e.preventDefault();send()};
+
+/* ---------- myth buster ---------- */
+const myths=['"Government of the people, by the people, for the people" - Abraham Lincoln','"It is better to be feared than loved." - Machiavelli','"Be the change you wish to see in the world." - Gandhi','"Veni, vidi, vici." - Julius Caesar','"The supreme art of war is to subdue the enemy without fighting." - Abraham Lincoln','Napoleon wrote to Josephine that he hated her'];
+myths.forEach(e=>{const b=document.createElement("button");b.className="chip";b.type="button";b.textContent=e;b.onclick=()=>{$("#mq").value=e;mcheck()};$("#mchips").append(b)});
+const stamps={quote:{verified:"Verified",misquoted:"Misquoted",not_found:"Not found"},fact:{verified:"Supported",misquoted:"Source says otherwise",not_found:"Not found"}};
+let lastCheck=null;
+async function mcheck(){
+  const q=$("#mq").value.trim(); if(q.length<8) return;
+  $("#mb").disabled=true; $("#mout").innerHTML='<p class="spin">Checking the original texts…</p>';
+  try{
+    const r=await fetch("/api/check",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text:q})});
+    const d=await r.json(); if(!r.ok) throw new Error(d.detail||"Request failed");
+    lastCheck=d; renderCheck(d);
+    history.replaceState(null,"","?check="+encodeURIComponent(q)+"#myth");
+  }catch(e){ $("#mout").innerHTML=`<p class="err">${esc(e.message)}</p>`; }
+  finally{ $("#mb").disabled=false; }
+}
+function renderCheck(d){
+  const label=(stamps[d.kind]||stamps.quote)[d.verdict]+(d.wrong_person?" · wrong person":"");
+  const s=d.source;
+  $("#mout").innerHTML=`<div class="card">
+    <div class="top"><span class="stamp ${d.verdict}">${esc(label)}</span><button class="share" id="mshare" type="button">Copy link</button></div>
+    <p class="yousaid">You checked: ${esc(d.input)}</p>
+    <p class="summary">${esc(d.explanation)}</p>
+    ${s?`<div class="claim"><p><b>What the source actually says:</b></p>
+      <blockquote id="msrc" title="Click to read in context">“${esc(s.quote)}”</blockquote>
+      <div class="cite">${esc(s.author)}, <i>${esc(s.work)}</i>, ${esc(String(s.section).replace(/[.\s]+$/,""))}${s.date?` (${esc(s.date)})`:""}${s.translator?`, translated by ${esc(s.translator)}`:""}.
+        <a href="#" id="mctx">Read in context</a> · <a href="${esc(s.url)}" target="_blank" rel="noopener">Original ↗</a></div></div>`:""}
+    ${d.verdict==="not_found"?`<p class="caveat">This library holds a few dozen works, so "not found" means it isn't in these texts. It may still come from a speech, letter or book that isn't here. See <a href="#" id="mlib">what's in the library</a>.</p>`:""}
+  </div>`;
+  if(s){ $("#msrc").onclick=$("#mctx").onclick=ev=>{ev.preventDefault();openViewer(s)}; }
+  const lib=$("#mlib"); if(lib) lib.onclick=ev=>{ev.preventDefault(); const det=$("details.lib"); det.open=true; det.scrollIntoView({behavior:"smooth"});};
+  $("#mshare").onclick=()=>{ navigator.clipboard&&navigator.clipboard.writeText(location.href).then(()=>{$("#mshare").textContent="Link copied"}); };
+}
+$("#mf").onsubmit=e=>{e.preventDefault();mcheck()};
+
+/* ---------- start on the right tab ---------- */
+{
+  const params=new URLSearchParams(location.search);
+  if(params.get("check")){ showTab("myth"); $("#mq").value=params.get("check"); mcheck(); }
+  else if(location.hash.startsWith("#figure")) showTab("figure");
+  else if(location.hash==="#myth") showTab("myth");
+}
 </script>
 </body>
 </html>
