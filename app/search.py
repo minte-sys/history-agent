@@ -54,6 +54,31 @@ class Corpus:
         args.append(limit)
         return [dict(zip(COLUMNS + ("score",), r)) for r in self.db.execute(sql, args)]
 
+    def phrase_search(self, text: str, figure: str | None = None, limit: int = 8):
+        """Find passages sharing runs of words with `text` (for checking quotes).
+
+        Searches overlapping 3-word phrases, stopwords included, so a famous line made of common
+        words ("of the people, by the people") still finds its source.
+        """
+        ws = [w.replace('"', "") for w in re.findall(r"[\w']+", text.lower())]
+        if len(ws) < 3:
+            return self.search(text, figure, limit)
+        shingles = list(dict.fromkeys(" ".join(ws[i:i + 3]) for i in range(len(ws) - 2)))[:40]
+        match = " OR ".join(f'text:"{s}"' for s in shingles)
+        sql = ("SELECT p." + ", p.".join(COLUMNS) + ", bm25(passages_fts) AS score "
+               "FROM passages_fts JOIN passages p ON p.rowid = passages_fts.rowid "
+               "WHERE passages_fts MATCH ?")
+        args: list = [match]
+        if figure:
+            sql += " AND p.figure LIKE ?"
+            args.append(f"%{figure}%")
+        sql += " ORDER BY score LIMIT ?"
+        args.append(limit)
+        try:
+            return [dict(zip(COLUMNS + ("score",), r)) for r in self.db.execute(sql, args)]
+        except sqlite3.OperationalError:
+            return []
+
     def get(self, pid: str):
         r = self.db.execute("SELECT " + ", ".join(COLUMNS) + " FROM passages WHERE id = ?", (pid,)).fetchone()
         return dict(zip(COLUMNS, r)) if r else None

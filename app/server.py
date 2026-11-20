@@ -13,6 +13,8 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
 from agent import ModelBusy, ModelError, answer
+from figure import Turn, personas, reply
+from mythbuster import check
 from search import Corpus
 
 app = FastAPI(title="Primary Source History Agent")
@@ -37,6 +39,25 @@ def _allow(ip: str) -> bool:
 
 class Ask(BaseModel):
     question: str = Field(min_length=3, max_length=500)
+
+
+class FigureMsg(BaseModel):
+    figure: str = Field(max_length=80)
+    message: str = Field(min_length=2, max_length=500)
+    history: list[Turn] = Field(default_factory=list, max_length=20)
+
+
+class CheckBody(BaseModel):
+    text: str = Field(min_length=8, max_length=600)
+
+
+def _client_ip(request: Request) -> str:
+    return request.headers.get("x-forwarded-for", request.client.host if request.client else "?").split(",")[0]
+
+
+def _guard(request: Request):
+    if not _allow(_client_ip(request)):
+        raise HTTPException(429, "Too many questions from you this hour. Please try again later.")
 
 
 @app.get("/")
@@ -70,15 +91,40 @@ def context(pid: str, before: int = 1, after: int = 1):
 
 @app.post("/api/ask")
 def ask(body: Ask, request: Request):
-    ip = request.headers.get("x-forwarded-for", request.client.host if request.client else "?").split(",")[0]
-    if not _allow(ip):
-        raise HTTPException(429, "Too many questions from you this hour. Please try again later.")
+    _guard(request)
     try:
         return answer(body.question.strip(), corpus)
     except ModelBusy:
         raise HTTPException(503, "The service is busy. Please try again in a minute.")
     except ModelError:
         raise HTTPException(502, "Something went wrong while answering. Please try again.")
+
+
+@app.get("/api/figures")
+def figures():
+    """Figures you can chat with: those whose texts are their own words."""
+    return personas(corpus)
+
+
+@app.post("/api/figure")
+def figure_chat(body: FigureMsg, request: Request):
+    """Ask the figure: a reply built only from that figure's own words."""
+    if body.figure not in {p["id"] for p in personas(corpus)}:
+        raise HTTPException(404, "That figure isn't in the library.")
+    _guard(request)
+    try:
+        return reply(body.figure, body.message.strip(), body.history, corpus)
+    except ModelBusy:
+        raise HTTPException(503, "The service is busy. Please try again in a minute.")
+    except ModelError:
+        raise HTTPException(502, "Something went wrong while answering. Please try again.")
+
+
+@app.post("/api/check")
+def myth_check(body: CheckBody, request: Request):
+    """Myth buster: is this quote or claim in the sources? Works without the model for exact quotes."""
+    _guard(request)
+    return check(body.text.strip(), corpus)
 
 
 @app.get("/healthz")
